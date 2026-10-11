@@ -1,0 +1,2 @@
+const baseUrl = import.meta.env.VITE_API_URL ?? '/api'
+export async function api<T>(path: string, options: RequestInit = {}): Promise<T> { const response = await fetch(`${baseUrl}${path}`, { ...options, credentials: 'include', headers: { 'Content-Type': 'application/json', ...options.headers } }); if (!response.ok) throw new Error(`Request failed: ${response.status}`); return response.json() as Promise<T> }

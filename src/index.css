@@ -1,0 +1,46 @@
+@import url("https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Lato:wght@400;700;900&display=swap");
+@import "tailwindcss";
+
+:root {
+  --font-body: "Lato", sans-serif;
+  --font-heading: "Figtree", sans-serif;
+  --color-primary: #1e3a5f;
+  --color-primary-dark: #142b45;
+  --color-primary-soft: #243f5f;
+  --color-background: #f6f8fb;
+  --color-text: #1f2937;
+  --color-secondary-text: #64748b;
+  --color-border: #e2e8f0;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-background);
+}
+* {
+  box-sizing: border-box;
+  scrollbar-width: none;
+}
+body {
+  margin: 0;
+  min-width: 0;
+  overflow-x: hidden;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+button{
+  cursor: pointer;
+}
