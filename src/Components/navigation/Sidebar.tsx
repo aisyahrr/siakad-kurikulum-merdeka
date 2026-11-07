@@ -57,7 +57,7 @@ export function Sidebar({ role = "siswa", isOpen, onClose }: SidebarProps) {
   return (
     <>
       <aside
-        className={`fixed left-0 top-0 z-50 flex h-screen w-[220px] flex-col rounded-tr-[20px] rounded-br-[20px] bg-[#011024] py-7 pl-6 pr-0 transition-transform duration-300 max-md:-translate-x-full ${
+        className={`fixed left-0 top-0 z-50 flex h-screen w-[200px] flex-col rounded-tr-[10px] rounded-br-[10px] bg-[#011024] py-7 pl-6 pr-0 transition-transform duration-300 max-md:-translate-x-full ${
           isOpen ? "max-md:translate-x-0" : ""
         }`}
       >

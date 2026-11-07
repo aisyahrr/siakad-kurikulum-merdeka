@@ -79,8 +79,7 @@ export function useAttendance(studentId: string = "student-alya") {
   }, [studentAttendance]);
 
   // Handler pengajuan izin / sakit mandiri
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const submitLeaveRequest = useCallback((category: string, reason: string) => {
+  const submitLeaveRequest = useCallback((category: string, _reason: string) => {
     setIsModalOpen(false);
     setFeedback(`Permohonan ${category} berhasil dikirim ke Wali Kelas.`);
     setTimeout(() => setFeedback(""), 4000);

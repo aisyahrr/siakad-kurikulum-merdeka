@@ -1,14 +1,16 @@
 import type { RouteObject } from "react-router-dom";
 
 import { SiswaLayout } from "@/layouts/SiswaLayout";
-import { StudentDashboard } from "@/Pages/siswa/Dashboard";
-import { NilaiFeature } from "@/Pages/siswa/Nilai";
-import { PresensiFeature } from "@/Pages/siswa/Presensi";
-import { SchedulePage as ScheduleFeature } from "@/Pages/siswa/ScheduleFeature";
-import { MateriFeature } from "@/Pages/siswa/Materi";
-import { PengumumanFeature } from "@/Pages/siswa/Pengumuman";
-import { ProfilFeature } from "@/Pages/siswa/Profil";
-import { RaporFeature } from "@/Pages/siswa/Rapor";
+import {
+  StudentDashboard,
+  NilaiFeature,
+  PresensiFeature,
+  ScheduleFeature,
+  MateriFeature,
+  PengumumanFeature,
+  ProfilFeature,
+  RaporFeature,
+} from "@/Pages/siswa";
 
 export const siswaRoutes: RouteObject[] = [
   {
