@@ -1,7 +1,10 @@
-<<<<<<< HEAD
 # SIAKAD: Sistem Informasi Akademik
 
 Platform tata kelola pembelajaran dan operasional akademik terpadu berbasis web yang mengadopsi **Kurikulum Merdeka (Fase E & Fase F)**. SIAKAD menghubungkan lima aktor sekolah (Admin, Guru, Wali Kelas, Siswa, dan Orang Tua) dalam satu sistem dengan pemisahan peran yang tegas, *Early Warning System*, dan rapor digital siap cetak.
+
+![React](https://img.shields.io/badge/React-TypeScript-17345b)
+![Tailwind](https://img.shields.io/badge/Tailwind-CSS-087b79)
+![Status](https://img.shields.io/badge/status-in%20development-d97706)
 
 ## Fitur Utama
 
@@ -64,10 +67,9 @@ src/
 
 > Sesuaikan perintah di bawah dengan package manager dan tool build yang kamu pakai.
 
-```bash
 # Clone repositori
-git clone https://github.com/<username>/<nama-repo>.git
-cd <nama-repo>
+git clone https://github.com/aisyahrr/siakad-kurikulum-merdeka.git
+cd siakad-kurikulum-merdeka
 
 # Install dependensi
 npm install
@@ -77,7 +79,6 @@ npm run dev
 
 # Build untuk produksi
 npm run build
-```
 
 ## Dokumentasi
 
@@ -97,80 +98,3 @@ Kontribusi terbuka. Silakan fork repositori ini, buat branch fitur (`git checkou
 ## Lisensi
 
 Tentukan lisensi proyek (misalnya MIT) dan tambahkan berkas `LICENSE`.
-=======
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
->>>>>>> b615844 (Initial commit: SIAKAD)
