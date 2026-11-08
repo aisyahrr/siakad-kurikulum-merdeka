@@ -2,7 +2,7 @@
 
 ## 1. Ringkasan Eksekutif & Tujuan Produk
 
-SIAKAD adalah platform tata kelola pembelajaran dan operasional akademik terpadu berbasis web yang mengadopsi standar **Kurikulum Merdeka (Fase E & Fase F)**. Platform ini menghubungkan lima aktor sekolah (Admin, Guru, Wali Kelas, Siswa, dan Orang Tua/Wali Murid) dalam satu sistem dengan pemisahan peran yang tegas, sistem deteksi dini (*Early Warning System*), serta pelaporan rapor digital siap cetak.
+SIAKAD adalah platform tata kelola pembelajaran dan operasional akademik terpadu berbasis web yang mengadopsi standar **Kurikulum Merdeka (Fase E & Fase F)**. Platform ini menghubungkan lima aktor sekolah (Admin, Guru, Wali Kelas, Siswa, dan Orang Tua/Wali Murid) dalam satu sistem dengan pemisahan peran yang tegas, sistem deteksi dini (_Early Warning System_), serta pelaporan rapor digital siap cetak.
 
 ---
 
@@ -12,17 +12,17 @@ Aplikasi ini menerapkan bahasa visual **Soft Neumorphism** yang konsisten dengan
 
 ### Palet Warna Utama
 
-| Peran Warna | Kode | Keterangan |
-|---|---|---|
-| Background Canvas / Base | `#e9eef3` | Latar utama |
-| Card Raised / Surface | `#e9eef3` | Permukaan kartu |
-| Inset Well / Field Background | `#edf2f6` | Latar input / panel cekung |
-| Primary / Accent Navy | `#17345b` | Teks utama, tombol primer, header |
-| Secondary / Accent Teal | `#087b79` | Indikator tuntas, tombol sukses/kontak |
-| Status Bahaya / Urgent Red | `#c0392b` / `#fadbd8` | Peringatan, alpa, remedial |
-| Status Peringatan / Amber | `#d97706` / `#fef3c7` | Sakit, izin dispensasi |
-| Teks Primer | `#20272d` | |
-| Teks Sekunder / Keterangan | `#68777c` / `#5a6a72` | |
+| Peran Warna                   | Kode                  | Keterangan                             |
+| ----------------------------- | --------------------- | -------------------------------------- |
+| Background Canvas / Base      | `#e9eef3`             | Latar utama                            |
+| Card Raised / Surface         | `#e9eef3`             | Permukaan kartu                        |
+| Inset Well / Field Background | `#edf2f6`             | Latar input / panel cekung             |
+| Primary / Accent Navy         | `#17345b`             | Teks utama, tombol primer, header      |
+| Secondary / Accent Teal       | `#087b79`             | Indikator tuntas, tombol sukses/kontak |
+| Status Bahaya / Urgent Red    | `#c0392b` / `#fadbd8` | Peringatan, alpa, remedial             |
+| Status Peringatan / Amber     | `#d97706` / `#fef3c7` | Sakit, izin dispensasi                 |
+| Teks Primer                   | `#20272d`             |                                        |
+| Teks Sekunder / Keterangan    | `#68777c` / `#5a6a72` |                                        |
 
 ### Box-Shadow Tokens
 
@@ -40,13 +40,13 @@ Aplikasi ini menerapkan bahasa visual **Soft Neumorphism** yang konsisten dengan
 
 ## 3. Matriks Hak Akses & Peran Pengguna (Role-Based Access Control)
 
-| Aktor | Fokus Utama | Akses Data | Interaksi Kunci |
-|---|---|---|---|
-| **Admin** | Tata kelola sistem & master data | Global (seluruh sekolah) | CRUD Akun, Plotting Rombel, Kurikulum Mapel, Bulk Import CSV, Kunci Nilai |
-| **Guru** | KBM & Asesmen Mata Pelajaran | Terbatas pada kelas & mapel yang diampu | Presensi per sesi, input Formatif/STS/SAS, bank materi, kuis, pengumuman |
-| **Wali Kelas** | Pembinaan 1 rombel secara holistik | Terbatas pada 1 rombel binaan | Monitoring kelas, Early Warning System, Dossier siswa, Rekap Rapor A4, Log Bimbingan |
-| **Siswa** | Belajar mandiri & transparansi capaian | Personal diri sendiri | Dashboard, materi/kuis, presensi, jadwal, transkrip nilai, rapor digital, profil |
-| **Orang Tua** | Pemantauan perkembangan anak (*read-mostly*) | Personal anak terhubung | Monitoring capaian, status presensi hari ini, kontak wali kelas, ajukan surat izin |
+| Aktor          | Fokus Utama                                  | Akses Data                              | Interaksi Kunci                                                                      |
+| -------------- | -------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------ |
+| **Admin**      | Tata kelola sistem & master data             | Global (seluruh sekolah)                | CRUD Akun, Plotting Rombel, Kurikulum Mapel, Bulk Import CSV, Kunci Nilai            |
+| **Guru**       | KBM & Asesmen Mata Pelajaran                 | Terbatas pada kelas & mapel yang diampu | Presensi per sesi, input Formatif/STS/SAS, bank materi, kuis, pengumuman             |
+| **Wali Kelas** | Pembinaan 1 rombel secara holistik           | Terbatas pada 1 rombel binaan           | Monitoring kelas, Early Warning System, Dossier siswa, Rekap Rapor A4, Log Bimbingan |
+| **Siswa**      | Belajar mandiri & transparansi capaian       | Personal diri sendiri                   | Dashboard, materi/kuis, presensi, jadwal, transkrip nilai, rapor digital, profil     |
+| **Orang Tua**  | Pemantauan perkembangan anak (_read-mostly_) | Personal anak terhubung                 | Monitoring capaian, status presensi hari ini, kontak wali kelas, ajukan surat izin   |
 
 ---
 
@@ -55,29 +55,35 @@ Aplikasi ini menerapkan bahasa visual **Soft Neumorphism** yang konsisten dengan
 ### A. Modul Administrator (`/admin`)
 
 **Dashboard Kendali (`/admin`)**
+
 - Metrik agregat sekolah (Total Siswa, Guru, Rombel, Uptime Server).
-- *System Audit Trail* (log aktivitas perubahan data penting secara realtime).
+- _System Audit Trail_ (log aktivitas perubahan data penting secara realtime).
 - Pintasan cepat ke penambahan akun dan impor berkas.
 
 **Manajemen Pengguna & Kredensial (`/admin/pengguna`)**
+
 - Katalog multi-aktor dengan filter per role.
 - Reset kredensial dan aktivasi/penonaktifan akses akun secara instan.
 - Form modal penambahan pengguna baru (NISN/NIP terintegrasi).
 
 **Data Pokok Akademik (`/admin/data-akademik`)**
+
 - Tab **Buku Induk Siswa** (nama, NISN, rombel, angkatan, status).
 - Tab **Pendidik & Penugasan** (NIP, beban ajar, plotting Wali Kelas per rombel).
 
 **Master Rombel & Mata Pelajaran (`/admin/master-data`)**
+
 - Pengaturan Rombongan Belajar (Fase E/F, daya tampung, alokasi wali kelas).
 - Konfigurasi Mata Pelajaran (kode mapel, bobot jam tatap muka, target KKTP acuan).
 
 **Bulk Import Database (`/admin/import`)**
+
 - Dukungan unggah berkas massal untuk Siswa, Guru, dan Rombel.
 - Unduh template CSV resmi.
-- Parser pratinjau data dengan validasi galat baris (*row validation*).
+- Parser pratinjau data dengan validasi galat baris (_row validation_).
 
 **Pengaturan Sistem (`/admin/pengaturan`)**
+
 - Pengaturan Tahun Ajaran & Semester aktif.
 - Fitur **Kunci Entri Nilai Rapor (Grade Entry Freeze)** untuk membekukan perubahan nilai oleh guru sebelum pencetakan rapor.
 - Konfigurasi ambang batas KKTP dan peringatan absensi.
@@ -98,31 +104,37 @@ Aplikasi ini menerapkan bahasa visual **Soft Neumorphism** yang konsisten dengan
 ### C. Modul Wali Kelas (`/wali-kelas`)
 
 **Dashboard Monitoring & Early Warning (`/wali-kelas`)**
+
 - Rata-rata capaian kumulatif kelas dan persentase kehadiran rombel.
 - **Early Warning System:** deteksi otomatis siswa berisiko (presensi < 75% atau nilai rata-rata < 70.0).
 - Tombol pintas hubungi orang tua via WhatsApp dengan template pesan otomatis.
 - Tombol navigasi cepat beralih peran ke ruang guru (`/guru`).
 
 **Dossier & Profil Siswa Binaan (`/wali-kelas/siswa`)**
-- Tampilan *Split-Master*: daftar siswa di sisi kiri dan dossier mendalam di sisi kanan.
+
+- Tampilan _Split-Master_: daftar siswa di sisi kiri dan dossier mendalam di sisi kanan.
 - Transkrip komprehensif lintas mata pelajaran (Formatif, STS, SAS, Nilai Akhir).
 - Riwayat akumulasi ketidakhadiran individu (H/I/S/A) dan kontak wali murid.
 
 **Rekap Nilai & Cetak Rapor Digital (`/wali-kelas/nilai` atau `/rekap`)**
+
 - Master spreadsheet rekap nilai seluruh siswa kelas binaan.
 - Kalkulasi otomatis peringkat kelas (Rank #1 s.d. selesai).
 - Fitur ekspor berkas `.CSV`.
 - Modal Pratinjau Rapor Digital Cetak (Standar A4/Legal): lengkap dengan kop dinas pendidikan, identitas siswa, tabel capaian kompetensi, catatan wali kelas, dan kolom tanda tangan resmi.
 
 **Rekap Presensi & Verifikasi Dispensasi (`/wali-kelas/presensi`)**
+
 - Ringkasan akumulasi kehadiran rombel per bulan atau semester.
 - Verifikasi permohonan surat sakit/dispensasi yang diajukan orang tua siswa (Setujui / Tolak).
 
 **Catatan Bimbingan & Konseling (`/wali-kelas/bimbingan`)**
+
 - Dokumentasi kasus siswa (Akademik, Kedisiplinan, Presensi, Karakter).
 - Pencatatan rencana tindak lanjut dan status penanganan (Dalam Pemantauan vs Tuntas).
 
 **Warta & Pengumuman Rombel (`/wali-kelas/pengumuman`)**
+
 - Publikasi pengumuman internal untuk siswa rombel dan wali murid.
 - Pengunggahan surat edaran dan dokumen lampiran PDF.
 
@@ -140,20 +152,24 @@ Aplikasi ini menerapkan bahasa visual **Soft Neumorphism** yang konsisten dengan
 ### E. Modul Orang Tua / Wali Murid (`/orang-tua`)
 
 **Dashboard Orang Tua (`/orang-tua`)**
+
 - Status kehadiran anak hari ini secara realtime (Hadir - Tepat Waktu / Sakit / Izin).
 - Kartu rata-rata nilai, peringkat kelas anak, dan tingkat kehadiran semester berjalan.
 - Tombol langsung kirim pesan WhatsApp ke Wali Kelas.
 - Agenda dan undangan pertemuan wali murid terbaru.
 
 **Nilai & Perkembangan Anak (`/orang-tua/nilai`)**
-- Transkrip nilai *read-only* seluruh mata pelajaran.
+
+- Transkrip nilai _read-only_ seluruh mata pelajaran.
 - Status ketercapaian batas KKTP (70.0) dan pratinjau lembar rapor digital.
 
 **Presensi & Pengajuan Izin Mandiri (`/orang-tua/presensi`)**
+
 - Rekapitulasi absensi anak (Hadir, Izin, Sakit, Alpa).
 - **Formulir Pengajuan Izin/Sakit:** orang tua dapat mengunggah keterangan sakit atau dispensasi tanpa harus datang ke sekolah.
 
 **Warta & Edaran Sekolah (`/orang-tua/pengumuman`)**
+
 - Informasi rapat evaluasi belajar, edaran libur semester, dan agenda penting sekolah.
 
 ---
@@ -167,7 +183,6 @@ Aplikasi ini menerapkan bahasa visual **Soft Neumorphism** yang konsisten dengan
 
   {/* Protected Session */}
   <Route element={<ProtectedRoute />}>
-
     {/* 1. ADMIN WORKSPACE */}
     <Route element={<RoleRoute role="admin" />}>
       <Route element={<AdminLayout />}>
@@ -215,7 +230,10 @@ Aplikasi ini menerapkan bahasa visual **Soft Neumorphism** yang konsisten dengan
         <Route index path="/orang-tua" element={<DashboardOrangTuaPage />} />
         <Route path="/orang-tua/nilai" element={<NilaiAnakPage />} />
         <Route path="/orang-tua/presensi" element={<PresensiAnakPage />} />
-        <Route path="/orang-tua/pengumuman" element={<PengumumanOrangTuaPage />} />
+        <Route
+          path="/orang-tua/pengumuman"
+          element={<PengumumanOrangTuaPage />}
+        />
       </Route>
     </Route>
 
@@ -232,7 +250,6 @@ Aplikasi ini menerapkan bahasa visual **Soft Neumorphism** yang konsisten dengan
         <Route path="/siswa/profil" element={<ProfilFeature />} />
       </Route>
     </Route>
-
   </Route>
 
   {/* Wildcard Fallback */}
@@ -333,12 +350,12 @@ interface GradeRecord {
   id: string;
   studentId: string;
   subjectCode: string;
-  formatif: number;   // Bobot 40%
-  sts: number;        // Bobot 30%
-  sas: number;        // Bobot 30%
+  formatif: number; // Bobot 40%
+  sts: number; // Bobot 30%
+  sas: number; // Bobot 30%
   finalScore: number; // Formula: (0.4 * formatif) + (0.3 * sts) + (0.3 * sas)
-  kktp: number;       // Acuan baku: 70.0
-  isPassed: boolean;  // finalScore >= kktp
+  kktp: number; // Acuan baku: 70.0
+  isPassed: boolean; // finalScore >= kktp
 }
 ```
 
@@ -351,7 +368,7 @@ interface AttendanceRecord {
   date: string;
   status: "Hadir" | "Izin" | "Sakit" | "Alpa";
   documentUrl?: string; // Berkas surat izin / surat dokter
-  verifiedBy?: string;  // ID Wali Kelas yang memvalidasi
+  verifiedBy?: string; // ID Wali Kelas yang memvalidasi
 }
 ```
 
@@ -384,7 +401,7 @@ Siswa dinyatakan **Tuntas** jika $\text{Nilai Akhir} \ge 70.0$. Nilai di bawah 7
 
 ### Peringkat Siswa (Ranking Rombel)
 
-Diurutkan secara menurun (*descending*) berdasarkan rata-rata kumulatif seluruh mata pelajaran yang diambil siswa pada semester aktif.
+Diurutkan secara menurun (_descending_) berdasarkan rata-rata kumulatif seluruh mata pelajaran yang diambil siswa pada semester aktif.
 
 ### Indikator Early Warning System (Wali Kelas)
 
@@ -396,4 +413,4 @@ Siswa otomatis diberi tag **Perhatian Khusus / Risiko** jika memenuhi minimal sa
 
 ### Kebijakan Kunci Nilai (Freeze Rule)
 
-Jika fitur `isGradeEntryLocked = true` diaktifkan oleh Admin, seluruh hak akses mutasi nilai pada modul Guru dinonaktifkan (*read-only*), menjamin stabilitas data menjelang pencetakan rapor semester.
+Jika fitur `isGradeEntryLocked = true` diaktifkan oleh Admin, seluruh hak akses mutasi nilai pada modul Guru dinonaktifkan (_read-only_), menjamin stabilitas data menjelang pencetakan rapor semester.
