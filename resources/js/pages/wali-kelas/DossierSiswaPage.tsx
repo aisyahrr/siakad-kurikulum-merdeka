@@ -39,7 +39,7 @@ interface StudentDetail {
   grades: SubjectGrade[];
 }
 
-export function DossierSiswaPage() {
+export default function DossierSiswaPage() {
   const [students] = useState<StudentDetail[]>([
     {
       id: "std-1",

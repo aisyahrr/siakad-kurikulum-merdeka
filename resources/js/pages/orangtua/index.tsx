@@ -1,4 +1,4 @@
-export {DashboardOrangTuaPage} from "./DashboardOrangTuaPage";
-export {NilaiAnakPage} from "./NilaiAnakPage";
-export {PresensiAnakPage} from "./PresensiAnakPage";
-export {PengumumanOrangTuaPage} from "./PengumumanOrangTuaPage";
+export {default as DashboardOrangTuaPage} from "./DashboardOrangTuaPage";
+export {default as NilaiAnakPage} from "./NilaiAnakPage";
+export {default as PresensiAnakPage} from "./PresensiAnakPage";
+export {default as PengumumanOrangTuaPage} from "./PengumumanOrangTuaPage";

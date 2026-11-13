@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Plus, X } from "lucide-react";
-import { Button } from "@/Components/ui/Button";
+import { Button } from "@/components/ui/button";
 
 export function Header({
   title,

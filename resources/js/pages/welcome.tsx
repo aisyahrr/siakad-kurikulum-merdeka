@@ -1,4 +1,5 @@
 import { Head, Link, usePage } from "@inertiajs/react";
+import logo from "@/assets/Icon.png";
 
 type PageProps = {
     auth?: {
@@ -58,7 +59,7 @@ export default function Welcome() {
               guru: "/guru",
               "wali-kelas": "/wali-kelas",
               siswa: "/siswa",
-              "orang-tua": "/orangtua",
+              "orang-tua": "/orang-tua",
           }[user.role] ?? "/login")
         : "/login";
 
@@ -72,8 +73,8 @@ export default function Welcome() {
                 <header className="absolute left-0 right-0 top-0 z-50">
                     <nav className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-6 lg:px-16">
                         <a href="#" className="flex items-center gap-3 group">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E4EBF5] text-[#17345B] shadow-[8px_8px_16px_#cbced1,-8px_-8px_16px_#ffffff] transition-all group-hover:shadow-[inset_4px_4px_8px_#cbced1,inset_-4px_-4px_8px_#ffffff]">
-                                <span className="text-xl font-black">J</span>
+                            <div className="flex h-13 w-13 p-1 items-center justify-center rounded-2xl bg-[#E4EBF5] text-[#17345B] shadow-[8px_8px_16px_#cbced1,-8px_-8px_16px_#ffffff] transition-all group-hover:shadow-[inset_4px_4px_8px_#cbced1,inset_-4px_-4px_8px_#ffffff]">
+                                <img src={logo} alt="Icon" width={100} />
                             </div>
 
                             <div>

@@ -2,6 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AcademicYearController;
+use App\Http\Controllers\SchoolClassController;
+use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ExtraFeatureController;
 
 Route::inertia('/', 'welcome')->name('home');
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])
@@ -11,9 +17,39 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Admin
     Route::middleware(['role:admin'])->group(function () {
         Route::inertia('/admin', 'admin/DashboardAdminPage')->name('admin.dashboard');
-        Route::inertia('/admin/pengguna', 'admin/ManajemenPenggunaPage')->name('admin.pengguna');
-        Route::inertia('/admin/data-akademik', 'admin/DataAkademikPage')->name('admin.data-akademik');
-        Route::inertia('/admin/master-data', 'admin/MasterDataPage')->name('admin.master-data');
+        
+        // Manajemen Pengguna
+        Route::get('/admin/pengguna', [UserController::class, 'index'])->name('admin.pengguna');
+        Route::post('/admin/pengguna', [UserController::class, 'store'])->name('admin.pengguna.store');
+        Route::put('/admin/pengguna/{user}', [UserController::class, 'update'])->name('admin.pengguna.update');
+        Route::put('/admin/pengguna/{user}/reset-password', [UserController::class, 'resetPassword'])->name('admin.pengguna.reset-password');
+        Route::delete('/admin/pengguna/{user}', [UserController::class, 'destroy'])->name('admin.pengguna.destroy');
+
+        // Data Akademik
+        Route::get('/admin/data-akademik', [AcademicYearController::class, 'index'])->name('admin.data-akademik');
+        Route::post('/admin/data-akademik', [AcademicYearController::class, 'store'])->name('admin.data-akademik.store');
+        Route::put('/admin/data-akademik/{academicYear}', [AcademicYearController::class, 'update'])->name('admin.data-akademik.update');
+        Route::delete('/admin/data-akademik/{academicYear}', [AcademicYearController::class, 'destroy'])->name('admin.data-akademik.destroy');
+
+        // Master Data (Kelas & Mapel)
+        Route::get('/admin/master-data', [SchoolClassController::class, 'index'])->name('admin.master-data');
+        Route::post('/admin/master-data/kelas', [SchoolClassController::class, 'store'])->name('admin.master-data.kelas.store');
+        Route::put('/admin/master-data/kelas/{schoolClass}', [SchoolClassController::class, 'update'])->name('admin.master-data.kelas.update');
+        Route::delete('/admin/master-data/kelas/{schoolClass}', [SchoolClassController::class, 'destroy'])->name('admin.master-data.kelas.destroy');
+
+        Route::post('/admin/master-data/mapel', [SubjectController::class, 'store'])->name('admin.master-data.mapel.store');
+        Route::put('/admin/master-data/mapel/{subject}', [SubjectController::class, 'update'])->name('admin.master-data.mapel.update');
+        Route::delete('/admin/master-data/mapel/{subject}', [SubjectController::class, 'destroy'])->name('admin.master-data.mapel.destroy');
+
+        // Manajemen Keuangan / SPP Admin
+        Route::get('/admin/keuangan', [PaymentController::class, 'index'])->name('admin.keuangan');
+        Route::post('/admin/keuangan', [PaymentController::class, 'store'])->name('admin.keuangan.store');
+        Route::put('/admin/keuangan/{payment}', [PaymentController::class, 'update'])->name('admin.keuangan.update');
+        Route::delete('/admin/keuangan/{payment}', [PaymentController::class, 'destroy'])->name('admin.keuangan.destroy');
+
+        // Presensi Guru
+        Route::get('/admin/presensi-guru', [ExtraFeatureController::class, 'teacherAttendance'])->name('admin.presensi-guru');
+
         Route::inertia('/admin/import', 'admin/ImportDataPage')->name('admin.import');
         Route::inertia('/admin/pengaturan', 'admin/PengaturanAdminPage')->name('admin.pengaturan');
     });
@@ -43,6 +79,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Siswa
     Route::middleware(['role:siswa'])->group(function () {
         Route::inertia('/siswa', 'siswa/StudentDashboardPage')->name('siswa.dashboard');
+        Route::get('/siswa/library', [ExtraFeatureController::class, 'library'])->name('siswa.library');
         Route::inertia('/siswa/schedule', 'siswa/SchedulePage')->name('siswa.schedule');
         Route::inertia('/siswa/rapor', 'siswa/RaporPage')->name('siswa.rapor');
         Route::inertia('/siswa/profil', 'siswa/ProfilPage')->name('siswa.profil');
@@ -54,10 +91,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Orang Tua
     Route::middleware(['role:orang-tua'])->group(function () {
-        Route::inertia('/orangtua', 'orangtua/DashboardOrangTuaPage')->name('orangtua.dashboard');
-        Route::inertia('/orangtua/nilai', 'orangtua/NilaiAnakPage')->name('orangtua.nilai');
-        Route::inertia('/orangtua/presensi', 'orangtua/PresensiAnakPage')->name('orangtua.presensi');
-        Route::inertia('/orangtua/pengumuman', 'orangtua/PengumumanOrangTuaPage')->name('orangtua.pengumuman');
+        Route::inertia('/orang-tua', 'orangtua/DashboardOrangTuaPage')->name('orangtua.dashboard');
+        Route::inertia('/orang-tua/nilai', 'orangtua/NilaiAnakPage')->name('orangtua.nilai');
+        Route::inertia('/orang-tua/presensi', 'orangtua/PresensiAnakPage')->name('orangtua.presensi');
+        Route::get('/orang-tua/keuangan', [PaymentController::class, 'index'])->name('orangtua.keuangan');
+        Route::inertia('/orang-tua/pengumuman', 'orangtua/PengumumanOrangTuaPage')->name('orangtua.pengumuman');
     });
 });
 

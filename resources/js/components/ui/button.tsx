@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 type ButtonVariant = "primary" | "secondary" | "ghost";
 type ButtonSize = "sm" | "md" | "lg";
 
-const variants: Record<ButtonVariant, string> = {
+export const variants: Record<ButtonVariant, string> = {
   primary:
     "inline-flex items-center justify-center gap-2 rounded-full bg-[#17345b] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#102743]",
   secondary:
@@ -12,7 +12,7 @@ const variants: Record<ButtonVariant, string> = {
     "inline-flex items-center justify-center gap-2 rounded-full bg-transparent px-5 py-3 text-sm font-bold",
 };
 
-const sizes: Record<ButtonSize, string> = {
+export const sizes: Record<ButtonSize, string> = {
   sm: "px-3 py-2 text-xs",
   md: "px-5 py-3 text-sm",
   lg: "px-6 py-3.5 text-base",

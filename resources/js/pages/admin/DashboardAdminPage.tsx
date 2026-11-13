@@ -69,23 +69,6 @@ export default function DashboardAdminPage() {
             Pantau ketersediaan sistem, audit operasional akun, dan kelola seluruh master data akademik.
           </p>
         </div>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/admin/pengguna"
-            className="inline-flex items-center gap-1.5 rounded-full bg-[#17345b] px-4 py-2 text-xs font-bold text-white shadow-[3px_3px_7px_#cbd3db] transition hover:bg-[#102743]"
-          >
-            <UserPlus size={14} />
-            Tambah Pengguna
-          </Link>
-          <Link
-            href="/admin/import"
-            className="inline-flex items-center gap-1.5 rounded-full bg-[#e9eef3] px-4 py-2 text-xs font-bold text-[#17345b] shadow-[3px_3px_7px_#cbd3db,-3px_-3px_7px_#fff] transition hover:text-[#102743]"
-          >
-            <Upload size={14} />
-            Bulk Import
-          </Link>
-        </div>
       </div>
 
       {/* TOP SUMMARY ARRAY METRICS */}

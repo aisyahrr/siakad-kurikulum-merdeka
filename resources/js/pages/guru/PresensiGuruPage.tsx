@@ -24,7 +24,7 @@ interface StudentAttendanceState {
   note: string;
 }
 
-export function PresensiGuruPage() {
+export default function PresensiGuruPage() {
   const assignments = getAssignmentView();
   const [assignmentId, setAssignmentId] = useState(assignments[0]?.id ?? "");
   const selected =

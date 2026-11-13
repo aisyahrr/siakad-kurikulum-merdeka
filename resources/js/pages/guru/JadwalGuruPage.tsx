@@ -11,7 +11,7 @@ import {
 import { Header } from "./shared";
 import { schedules, subjects, rombels } from "@/data/academic.data";
 
-export function JadwalGuruPage() {
+export default function JadwalGuruPage() {
   const [selectedDay, setSelectedDay] = useState("Semua");
   const days = ["Semua", "Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
 
@@ -118,7 +118,7 @@ export function JadwalGuruPage() {
               {/* CARD ACTIONS FOOTER */}
               <div className="mt-5 flex items-center justify-between gap-2 border-t border-[#d8e1e8] pt-3.5">
                 <Link
-                  to="/guru/presensi"
+                  href="/guru/presensi"
                   className="inline-flex items-center gap-1.5 rounded-full bg-[#e9eef3] px-3.5 py-1.5 text-[11px] font-bold text-[#55636a] shadow-[2px_2px_5px_#cbd3db,-2px_-2px_5px_#fff] transition hover:text-[#17345b]"
                 >
                   <ClipboardCheck size={13} />
@@ -126,7 +126,7 @@ export function JadwalGuruPage() {
                 </Link>
 
                 <Link
-                  to="/guru/pertemuan"
+                  href="/guru/pertemuan"
                   className="inline-flex items-center gap-1.5 rounded-full bg-[#17345b] px-3.5 py-1.5 text-[11px] font-bold text-white shadow-[2px_2px_5px_#cbd3db] transition hover:bg-[#102743]"
                 >
                   Buka Modul

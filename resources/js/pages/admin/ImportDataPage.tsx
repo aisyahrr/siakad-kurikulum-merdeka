@@ -22,7 +22,7 @@ interface ParsedRowPreview {
   errorNote?: string;
 }
 
-export function ImportDataPage() {
+export default function ImportDataPage() {
   const [targetType, setTargetType] = useState<ImportTarget>("siswa");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [parsedRows, setParsedRows] = useState<ParsedRowPreview[]>([]);

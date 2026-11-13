@@ -1,6 +1,6 @@
 export { default as DashboardAdminPage } from "./DashboardAdminPage";
-export { ManajemenPenggunaPage } from "./ManajemenPenggunaPage";
-export { DataAkademikPage } from "./DataAkademikPage";
-export { MasterDataPage } from "./MasterDataPage";
-export { ImportDataPage } from "./ImportDataPage";
-export { PengaturanAdminPage } from "./PengaturanAdminPage";
+export { default as ManajemenPenggunaPage } from "./ManajemenPenggunaPage";
+export { default as DataAkademikPage } from "./DataAkademikPage";
+export { default as MasterDataPage } from "./MasterDataPage";
+export { default as ImportDataPage } from "./ImportDataPage";
+export { default as PengaturanAdminPage } from "./PengaturanAdminPage";

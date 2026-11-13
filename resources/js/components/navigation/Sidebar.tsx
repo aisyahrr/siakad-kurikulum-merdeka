@@ -102,20 +102,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
                 {/* BOTTOM ACTIONS */}
                 <div className="mt-auto flex flex-col gap-1.5 pt-4">
-                    <Link
-                        href={`/${role}/pengaturan`}
-                        onClick={onClose}
-                        className={`group flex items-center gap-3.5 py-2.5 pl-4 pr-3 text-xs font-bold transition-all duration-200 ${
-                            isActive(`/${role}/pengaturan`)
-                                ? "rounded-l-2xl bg-[#e9eef3] text-[#17345b]"
-                                : "text-white hover:text-[#bcd5f7]"
-                        }`}
-                    >
-                        <Settings size={18} strokeWidth={1.9} />
-
-                        <span className="tracking-wide">Settings</span>
-                    </Link>
-
                     <button
                         type="button"
                         title="Keluar"

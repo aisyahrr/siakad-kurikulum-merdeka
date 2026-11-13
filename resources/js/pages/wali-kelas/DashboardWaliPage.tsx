@@ -21,7 +21,7 @@ interface AtRiskStudent {
   parentPhone: string;
 }
 
-export function DashboardWaliPage() {
+export default function DashboardWaliPage() {
   const [selectedRiskFilter, setSelectedRiskFilter] = useState<"Semua" | "Presensi" | "Akademik">("Semua");
 
   const atRiskStudents: AtRiskStudent[] = [
@@ -86,7 +86,7 @@ export function DashboardWaliPage() {
 
         {/* ROLE SWITCHER KE GURU */}
         <Link
-          to="/guru"
+          href="/guru"
           className="inline-flex items-center gap-2 rounded-2xl bg-[#e9eef3] px-4 py-2.5 text-xs font-bold text-[#17345b] shadow-[4px_4px_10px_#cbd3db,-4px_-4px_10px_#fff] transition hover:text-[#102743]"
         >
           <span>Pindah ke Ruang Guru</span>
@@ -214,7 +214,7 @@ export function DashboardWaliPage() {
                 </button>
 
                 <Link
-                  to="/wali-kelas/bimbingan"
+                  href="/wali-kelas/bimbingan"
                   className="inline-flex items-center gap-1.5 rounded-full bg-[#17345b] px-3.5 py-1.5 text-[11px] font-bold text-white shadow-sm transition hover:bg-[#102743]"
                 >
                   <MessageSquare size={12} />

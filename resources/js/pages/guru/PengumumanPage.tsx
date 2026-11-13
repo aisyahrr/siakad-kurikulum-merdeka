@@ -24,7 +24,7 @@ interface AnnouncementItem {
   isUrgent?: boolean;
 }
 
-export function PengumumanPage() {
+export default function PengumumanPage() {
   const [items] = useState<AnnouncementItem[]>(() =>
     initialAnnouncements.map((item, idx) => ({
       id: item.id ?? `ann-${idx + 1}`,

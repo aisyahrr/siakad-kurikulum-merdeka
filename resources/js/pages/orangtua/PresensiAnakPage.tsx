@@ -9,7 +9,7 @@ interface LeaveHistory {
   status: "Menunggu" | "Disetujui" | "Ditolak";
 }
 
-export function PresensiAnakPage() {
+export default function PresensiAnakPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [feedback, setFeedback] = useState("");
 

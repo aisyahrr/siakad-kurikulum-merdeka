@@ -39,7 +39,7 @@ class UserSeeder extends Seeder
                 'name' => 'Orang Tua Demo',
                 'email' => 'orangtua@siakad.test',
                 'password' => Hash::make('password'),
-                'role' => 'orangtua',
+                'role' => 'orang-tua',
             ],
         ];
 

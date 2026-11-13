@@ -7,6 +7,7 @@ import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { edit } from '@/routes/security';
+import SettingsLayout from '@/layouts/settings/layout';
 
 // oxfmt-ignore
 type Props = {
@@ -18,7 +19,7 @@ export default function Security(props: Props) {
     const currentPasswordInput = useRef<HTMLInputElement>(null);
 
     return (
-        <>
+        <SettingsLayout>
             <Head title="Security settings" />
 
             <h1 className="sr-only">Security settings</h1>
@@ -118,7 +119,7 @@ export default function Security(props: Props) {
                     )}
                 </Form>
             </div>
-        </>
+        </SettingsLayout>
     );
 }
 

@@ -31,7 +31,7 @@ interface StudentAttendanceSummary {
   totalSessions: number;
 }
 
-export function PresensiKelasPage() {
+export default function PresensiKelasPage() {
   const [selectedMonth, setSelectedMonth] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
   const [feedback, setFeedback] = useState("");

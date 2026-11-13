@@ -21,7 +21,7 @@ interface TeacherRecord {
   status: "PNS" | "PPPK" | "Honorer";
 }
 
-export function DataAkademikPage() {
+export default function DataAkademikPage() {
   const [activeTab, setActiveTab] = useState<"siswa" | "guru">("siswa");
   const [searchQuery, setSearchQuery] = useState("");
   const [classFilter, setClassFilter] = useState("Semua");

@@ -9,7 +9,7 @@ import {
   Database,
 } from "lucide-react";
 
-export function PengaturanAdminPage() {
+export default function PengaturanAdminPage() {
   const [academicYear, setAcademicYear] = useState("2024/2025");
   const [semester, setSemester] = useState<"Ganjil" | "Genap">("Ganjil");
   const [isGradeEntryLocked, setIsGradeEntryLocked] = useState(false);

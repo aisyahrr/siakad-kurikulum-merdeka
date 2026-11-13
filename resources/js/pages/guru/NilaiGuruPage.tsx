@@ -9,9 +9,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Header } from "./shared";
-import { useTeacherGradeBook } from "@/Hooks/guru/useTeacherGradeBook";
+import { useTeacherGradeBook } from "@/hooks/guru/useTeacherGradeBook";
 
-export function NilaiGuruPage() {
+export default function NilaiGuruPage() {
   const {
     assignments,
     assignmentId,

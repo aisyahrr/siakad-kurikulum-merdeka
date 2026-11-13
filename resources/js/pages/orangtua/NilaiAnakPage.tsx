@@ -17,7 +17,7 @@ interface SubjectScore {
   kktp: number;
 }
 
-export function NilaiAnakPage() {
+export default function NilaiAnakPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [printModal, setPrintModal] = useState(false);
 

@@ -3,7 +3,7 @@ import {
   Phone,
 } from "lucide-react";
 
-export function DashboardOrangTuaPage() {
+export default function DashboardOrangTuaPage() {
   // Data profil anak yang terhubung ke akun orang tua
   const studentInfo = {
     name: "Alya Putri",
@@ -129,7 +129,7 @@ export function DashboardOrangTuaPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-extrabold text-[#17345b]">Agenda & Warta Sekolah</h2>
-            <Link to="/orang-tua/pengumuman" className="text-xs font-bold text-[#087b79] hover:underline">
+            <Link href="/orang-tua/pengumuman" className="text-xs font-bold text-[#087b79] hover:underline">
               Lihat Semua
             </Link>
           </div>
@@ -157,7 +157,7 @@ export function DashboardOrangTuaPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-extrabold text-[#17345b]">Capaian Asesmen Terakhir</h2>
-            <Link to="/orang-tua/nilai" className="text-xs font-bold text-[#087b79] hover:underline">
+            <Link href="/orang-tua/nilai" className="text-xs font-bold text-[#087b79] hover:underline">
               Buku Nilai Lengkap
             </Link>
           </div>

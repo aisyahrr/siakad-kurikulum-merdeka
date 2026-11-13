@@ -21,7 +21,7 @@ interface SubjectData {
   teacherCount: number;
 }
 
-export function MasterDataPage() {
+export default function MasterDataPage() {
   const [activeTab, setActiveTab] = useState<"rombel" | "mapel">("rombel");
   const [searchQuery, setSearchQuery] = useState("");
   const [feedback, setFeedback] = useState("");

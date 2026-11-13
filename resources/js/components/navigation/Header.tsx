@@ -1,7 +1,15 @@
-import { Bell, Menu, Search } from "lucide-react";
-import { usePage } from "@inertiajs/react";
+import { Bell, LogOut, Menu, Search, Settings, ShieldCheck, Palette } from "lucide-react";
+import { Link, router, usePage } from "@inertiajs/react";
 import { roleLabels } from "../../constants/roleNavigation";
 import type { SharedData } from "@/types";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HeaderProps {
     onOpenSidebar: () => void;
@@ -66,20 +74,74 @@ export function Header({ onOpenSidebar }: HeaderProps) {
                 </button>
 
                 {/* USER CHIP */}
-                <div className="flex items-center gap-2.5">
-                    <div className="grid h-11 w-11 place-items-center rounded-full bg-[#17345b] font-bold text-white shadow-[4px_4px_10px_#cbd3db,-4px_-4px_10px_#ffffff]">
-                        {user.name?.[0] ?? "U"}
-                    </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button
+                            type="button"
+                            className="flex items-center gap-2.5 rounded-full outline-none"
+                        >
+                            <div className="grid h-11 w-11 place-items-center rounded-full bg-[#17345b] font-bold text-white shadow-[4px_4px_10px_#cbd3db,-4px_-4px_10px_#ffffff]">
+                                {user.name?.[0] ?? "U"}
+                            </div>
 
-                    <div className="hidden md:block">
-                        <p className="text-xs font-bold text-[#20282d]">
-                            {user.name}
-                        </p>
-                        <p className="text-[11px] text-[#748084]">
-                            {getRoleSubLabel()}
-                        </p>
-                    </div>
-                </div>
+                            <div className="hidden text-left md:block">
+                                <p className="text-xs font-bold text-[#20282d]">
+                                    {user.name}
+                                </p>
+                                <p className="text-[11px] text-[#748084]">
+                                    {getRoleSubLabel()}
+                                </p>
+                            </div>
+                        </button>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel>
+                            <p className="text-xs font-bold text-[#20282d]">
+                                {user.name}
+                            </p>
+                            <p className="text-[11px] font-normal text-[#748084]">
+                                {user.email}
+                            </p>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                            <Link
+                                href="/settings/profile"
+                                className="cursor-pointer"
+                            >
+                                <Settings className="mr-2 h-4 w-4" />
+                                Profile
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link
+                                href="/settings/security"
+                                className="cursor-pointer"
+                            >
+                                <ShieldCheck className="mr-2 h-4 w-4" />
+                                Security
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link
+                                href="/settings/appearance"
+                                className="cursor-pointer"
+                            >
+                                <Palette className="mr-2 h-4 w-4" />
+                                Appearance
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            className="cursor-pointer text-[#d9534f] focus:text-[#d9534f]"
+                            onSelect={() => router.post("/logout")}
+                        >
+                            <LogOut className="mr-2 h-4 w-4" />
+                            Logout
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </header>
     );

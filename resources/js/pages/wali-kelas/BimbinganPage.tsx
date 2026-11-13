@@ -22,7 +22,7 @@ interface GuidanceLog {
   status: "Dalam Pemantauan" | "Tuntas";
 }
 
-export function BimbinganPage() {
+export default function BimbinganPage() {
   const [logs, setLogs] = useState<GuidanceLog[]>([
     {
       id: "log-1",

@@ -22,7 +22,7 @@ interface StudentMasterGrade {
   hadirPercent: number;
 }
 
-export function RekapNilaiPage() {
+export default function RekapNilaiPage() {
   const [students] = useState<StudentMasterGrade[]>([
     {
       id: "std-1",

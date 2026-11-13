@@ -42,7 +42,7 @@ interface StudentSubmission {
   isGraded: boolean;
 }
 
-export function KuisPage() {
+export default function KuisPage() {
   const [items, setItems] = useState<QuizItem[]>(() =>
     initialQuizzes.map((item, idx) => ({
       id: `quiz-${idx + 1}`,

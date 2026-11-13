@@ -26,7 +26,7 @@ interface WaliAnnouncement {
   isUrgent: boolean;
 }
 
-export function PengumumanWaliPage() {
+export default function PengumumanWaliPage() {
   const [announcements, setAnnouncements] = useState<WaliAnnouncement[]>([
     {
       id: "ann-1",

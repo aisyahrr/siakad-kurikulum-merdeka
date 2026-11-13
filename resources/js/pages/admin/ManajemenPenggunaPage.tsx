@@ -23,7 +23,7 @@ interface UserAccount {
   lastLogin: string;
 }
 
-export function ManajemenPenggunaPage() {
+export default function ManajemenPenggunaPage() {
   const [users, setUsers] = useState<UserAccount[]>([
     {
       id: "u-1",
@@ -90,6 +90,8 @@ export function ManajemenPenggunaPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("Semua");
   const [modalCreate, setModalCreate] = useState(false);
+  const [selectedUserForReset, setSelectedUserForReset] = useState<UserAccount | null>(null);
+  const [passwordResetData, setPasswordResetData] = useState({ password: "", password_confirmation: "" });
   const [feedback, setFeedback] = useState("");
 
   const roles = ["Semua", "siswa", "guru", "wali-kelas", "orang-tua", "admin"];
@@ -125,11 +127,22 @@ export function ManajemenPenggunaPage() {
     setTimeout(() => setFeedback(""), 3500);
   };
 
-  const handleResetPassword = (name: string) => {
-    setFeedback(
-      `Tautan reset password untuk akun ${name} telah dikirimkan ke email terdaftar.`,
-    );
-    setTimeout(() => setFeedback(""), 4000);
+  const handleOpenResetModal = (user: UserAccount) => {
+    setSelectedUserForReset(user);
+    setPasswordResetData({ password: "", password_confirmation: "" });
+  };
+
+  const handleSubmitResetPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordResetData.password !== passwordResetData.password_confirmation) {
+      alert("Konfirmasi password tidak cocok!");
+      return;
+    }
+    if (selectedUserForReset) {
+      setFeedback(`Password untuk akun ${selectedUserForReset.name} berhasil diperbarui.`);
+      setSelectedUserForReset(null);
+      setTimeout(() => setFeedback(""), 4000);
+    }
   };
 
   const handleCreateUser = (e: React.FormEvent<HTMLFormElement>) => {
@@ -347,9 +360,9 @@ export function ManajemenPenggunaPage() {
                   {/* AKSI TOMBOL */}
                   <td className="py-3.5 px-3 text-center">
                     <div className="flex items-center justify-center gap-2">
-                      <button
+                       <button
                         type="button"
-                        onClick={() => handleResetPassword(u.name)}
+                        onClick={() => handleOpenResetModal(u)}
                         title="Reset Password"
                         className="grid h-7 w-7 place-items-center rounded-full bg-[#e9eef3] text-[#17345b] shadow-[2px_2px_4px_#cbd3db,-2px_-2px_4px_#fff] hover:text-[#087b79]"
                       >
@@ -382,6 +395,24 @@ export function ManajemenPenggunaPage() {
           </table>
         </div>
       </div>
+
+      {/* MODAL RESET PASSWORD */}
+      {selectedUserForReset && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
+            <h3 className="text-base font-extrabold text-[#17345b]">Reset Password</h3>
+            <p className="text-xs text-[#68777c] mb-4">Set password baru untuk {selectedUserForReset.name}</p>
+            <form onSubmit={handleSubmitResetPassword} className="space-y-3">
+              <input type="password" placeholder="Password Baru" className="w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs outline-none" onChange={(e) => setPasswordResetData({...passwordResetData, password: e.target.value})} required />
+              <input type="password" placeholder="Konfirmasi Password" className="w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs outline-none" onChange={(e) => setPasswordResetData({...passwordResetData, password_confirmation: e.target.value})} required />
+              <div className="flex justify-end gap-2 mt-4">
+                <button type="button" onClick={() => setSelectedUserForReset(null)} className="rounded-full px-4 py-2 text-xs bg-[#e9eef3] shadow">Batal</button>
+                <button type="submit" className="rounded-full px-4 py-2 text-xs bg-[#17345b] text-white shadow">Simpan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* MODAL TAMBAH PENGGUNA */}
       {modalCreate && (

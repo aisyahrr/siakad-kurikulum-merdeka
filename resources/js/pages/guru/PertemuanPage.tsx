@@ -25,7 +25,7 @@ interface MeetingItem {
   quizStatus?: string;
 }
 
-export function PertemuanPage() {
+export default function PertemuanPage() {
   const [items, setItems] = useState<MeetingItem[]>(() =>
     initialMeetings.map((item, idx) => ({
       id: `meeting-${idx + 1}`,
@@ -230,7 +230,7 @@ export function PertemuanPage() {
               {/* ACTION BUTTONS */}
               <div className="flex items-center gap-2 self-end sm:self-auto">
                 <Link
-                  to="/guru/presensi"
+                  href="/guru/presensi"
                   className="inline-flex items-center gap-1.5 rounded-full bg-[#e9eef3] px-3.5 py-1.5 text-[11px] font-bold text-[#55636a] shadow-[2px_2px_5px_#cbd3db,-2px_-2px_5px_#fff] transition hover:text-[#17345b]"
                 >
                   Presensi Sesi

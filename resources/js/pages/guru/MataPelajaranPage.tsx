@@ -17,7 +17,7 @@ import {
   teacherSubjects,
 } from "./data";
 
-export function MataPelajaranPage() {
+export default function MataPelajaranPage() {
   const [query, setQuery] = useState("");
   const [selectedRombel, setSelectedRombel] = useState("Semua");
   const [modal, setModal] = useState(false);
@@ -187,7 +187,7 @@ export function MataPelajaranPage() {
               {/* CARD ACTION BUTTONS */}
               <div className="mt-5 flex items-center justify-between gap-2 border-t border-[#d8e1e8] pt-3.5">
                 <Link
-                  to="/guru/presensi"
+                  href="/guru/presensi"
                   className="inline-flex items-center gap-1.5 rounded-full bg-[#e9eef3] px-3.5 py-1.5 text-[11px] font-bold text-[#55636a] shadow-[2px_2px_5px_#cbd3db,-2px_-2px_5px_#fff] transition hover:text-[#17345b]"
                 >
                   <ClipboardCheck size={13} />
@@ -195,7 +195,7 @@ export function MataPelajaranPage() {
                 </Link>
 
                 <Link
-                  to="/guru/pertemuan"
+                  href="/guru/pertemuan"
                   className="inline-flex items-center gap-1.5 rounded-full bg-[#17345b] px-3.5 py-1.5 text-[11px] font-bold text-white shadow-[2px_2px_5px_#cbd3db] transition hover:bg-[#102743]"
                 >
                   Buka Modul

@@ -16,7 +16,7 @@ interface ParentAnnouncement {
   attachmentName?: string;
 }
 
-export function PengumumanOrangTuaPage() {
+export default function PengumumanOrangTuaPage() {
   const [announcements] = useState<ParentAnnouncement[]>([
     {
       id: "1",
