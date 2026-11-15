@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('student_answers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('quiz_submission_id')->constrained('quiz_submissions')->cascadeOnDelete();
+            $table->foreignId('quiz_question_id')->constrained('quiz_questions')->cascadeOnDelete();
+            $table->foreignId('quiz_option_id')->nullable()->constrained('quiz_options')->nullOnDelete();
+            $table->text('essay_answer')->nullable();
+            $table->decimal('score', 5, 2)->nullable();
             $table->timestamps();
         });
     }

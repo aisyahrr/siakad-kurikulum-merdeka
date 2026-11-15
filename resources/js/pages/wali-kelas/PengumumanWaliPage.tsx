@@ -26,8 +26,42 @@ interface WaliAnnouncement {
   isUrgent: boolean;
 }
 
-export default function PengumumanWaliPage() {
-  const [announcements, setAnnouncements] = useState<WaliAnnouncement[]>([
+interface PengumumanWaliProps {
+  dbAnnouncements?: Array<{
+    id: number;
+    title: string;
+    content: string;
+    category: string;
+    target_role: string;
+    is_pinned?: boolean;
+    created_at?: string;
+    author?: { name: string };
+  }>;
+}
+
+export default function PengumumanWaliPage({ dbAnnouncements }: PengumumanWaliProps = {}) {
+  const [announcements, setAnnouncements] = useState<WaliAnnouncement[]>(() => {
+    if (dbAnnouncements && dbAnnouncements.length > 0) {
+      return dbAnnouncements.map((item) => ({
+        id: `ann-${item.id}`,
+        title: item.title,
+        category: (item.category === 'Akademik' ? 'Akademik' : 'Pertemuan Ortu') as any,
+        targetAudience: (item.target_role === 'siswa' ? 'Siswa Rombel' : item.target_role === 'orang-tua' ? 'Wali Murid' : 'Semua') as any,
+        date: item.created_at
+          ? new Date(item.created_at).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })
+          : "Hari Ini",
+        author: item.author?.name ? `${item.author.name} (Wali Kelas)` : "Wali Kelas",
+        excerpt: item.content.length > 130 ? item.content.substring(0, 130) + "..." : item.content,
+        content: item.content,
+        attachmentName: "Undangan_Rapat.pdf",
+        isUrgent: item.is_pinned ?? false,
+      }));
+    }
+    return [
     {
       id: "ann-1",
       title: "Undangan Rapat Evaluasi Capaian Belajar Tengah Semester (STS)",
@@ -63,7 +97,8 @@ export default function PengumumanWaliPage() {
       attachmentName: "Jadwal_Klinik_Belajar_Rombel.pdf",
       isUrgent: false,
     },
-  ]);
+    ];
+  });
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAudience, setSelectedAudience] = useState("Semua");

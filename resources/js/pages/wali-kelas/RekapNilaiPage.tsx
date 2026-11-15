@@ -22,8 +22,35 @@ interface StudentMasterGrade {
   hadirPercent: number;
 }
 
-export default function RekapNilaiPage() {
-  const [students] = useState<StudentMasterGrade[]>([
+interface RekapNilaiPageProps {
+  dbStudents?: Array<{
+    id: string;
+    name: string;
+    nisn: string;
+    gpa: number;
+    rank: number;
+    notes?: string;
+  }>;
+}
+
+export default function RekapNilaiPage({ dbStudents }: RekapNilaiPageProps = {}) {
+  const [students] = useState<StudentMasterGrade[]>(() => {
+    if (dbStudents && dbStudents.length > 0) {
+      return dbStudents.map((item) => ({
+        id: item.id,
+        name: item.name,
+        nisn: item.nisn,
+        matematika: item.gpa,
+        fisika: item.gpa,
+        kimia: item.gpa,
+        biologi: item.gpa,
+        bIndo: item.gpa,
+        bInggris: item.gpa,
+        hadirPercent: 96.0,
+        rank: item.rank,
+      }));
+    }
+    return [
     {
       id: "std-1",
       name: "Alya Putri",
@@ -89,7 +116,8 @@ export default function RekapNilaiPage() {
       hadirPercent: 71.6,
       rank: 5,
     },
-  ]);
+    ];
+  });
 
   const [searchQuery, setSearchQuery] = useState("");
   const [printStudent, setPrintStudent] = useState<StudentMasterGrade | null>(null);

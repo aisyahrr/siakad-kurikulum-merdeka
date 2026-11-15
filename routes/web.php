@@ -8,12 +8,32 @@ use App\Http\Controllers\SchoolClassController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ExtraFeatureController;
+use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\GradeController;
+use App\Http\Controllers\QuizController;
+use App\Http\Controllers\BimbinganController;
+use App\Http\Controllers\ReportCardController;
+use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\DashboardPortalController;
 
 Route::inertia('/', 'welcome')->name('home');
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])
     ->name('login.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
+        return match ($request->user()->role) {
+            'admin' => redirect('/admin'),
+            'guru' => redirect('/guru'),
+            'wali-kelas' => redirect('/wali-kelas'),
+            'siswa' => redirect('/siswa'),
+            'orang-tua' => redirect('/orangtua'),
+            default => redirect('/'),
+        };
+    })->name('dashboard');
+
     // Admin
     Route::middleware(['role:admin'])->group(function () {
         Route::inertia('/admin', 'admin/DashboardAdminPage')->name('admin.dashboard');
@@ -58,45 +78,82 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:guru'])->group(function () {
         Route::inertia('/guru', 'guru/DashboardPage')->name('guru.dashboard');
         Route::inertia('/guru/mata-pelajaran', 'guru/MataPelajaranPage')->name('guru.mata-pelajaran');
-        Route::inertia('/guru/jadwal', 'guru/JadwalGuruPage')->name('guru.jadwal');
-        Route::inertia('/guru/nilai', 'guru/NilaiGuruPage')->name('guru.nilai');
-        Route::inertia('/guru/presensi', 'guru/PresensiGuruPage')->name('guru.presensi');
-        Route::inertia('/guru/pertemuan', 'guru/PertemuanPage')->name('guru.pertemuan');
-        Route::inertia('/guru/kuis', 'guru/KuisPage')->name('guru.kuis');
+        
+        // Jadwal Mengajar Guru
+        Route::get('/guru/jadwal', [ScheduleController::class, 'teacherSchedule'])->name('guru.jadwal');
+        Route::post('/guru/jadwal', [ScheduleController::class, 'store'])->name('guru.jadwal.store');
+        Route::put('/guru/jadwal/{schedule}', [ScheduleController::class, 'update'])->name('guru.jadwal.update');
+        Route::delete('/guru/jadwal/{schedule}', [ScheduleController::class, 'destroy'])->name('guru.jadwal.destroy');
+
+        // Nilai Guru
+        Route::get('/guru/nilai', [GradeController::class, 'teacherGradebook'])->name('guru.nilai');
+        Route::post('/guru/nilai', [GradeController::class, 'saveGrade'])->name('guru.nilai.store');
+
+        // Presensi Guru
+        Route::get('/guru/presensi', [AttendanceController::class, 'teacherAttendance'])->name('guru.presensi');
+        Route::post('/guru/presensi', [AttendanceController::class, 'saveTeacherAttendance'])->name('guru.presensi.store');
+
+        // Pertemuan / Modul Guru
+        Route::get('/guru/pertemuan', [MeetingController::class, 'index'])->name('guru.pertemuan');
+        Route::post('/guru/pertemuan', [MeetingController::class, 'store'])->name('guru.pertemuan.store');
+        Route::put('/guru/pertemuan/{meeting}', [MeetingController::class, 'update'])->name('guru.pertemuan.update');
+        Route::delete('/guru/pertemuan/{meeting}', [MeetingController::class, 'destroy'])->name('guru.pertemuan.destroy');
+
+        // Kuis Online Guru
+        Route::get('/guru/kuis', [QuizController::class, 'index'])->name('guru.kuis');
+        Route::post('/guru/kuis', [QuizController::class, 'store'])->name('guru.kuis.store');
+        Route::put('/guru/kuis/{quiz}', [QuizController::class, 'update'])->name('guru.kuis.update');
+        Route::delete('/guru/kuis/{quiz}', [QuizController::class, 'destroy'])->name('guru.kuis.destroy');
+        Route::post('/guru/kuis/grade/{submission}', [QuizController::class, 'gradeEssay'])->name('guru.kuis.grade');
         Route::inertia('/guru/pengumuman', 'guru/PengumumanPage')->name('guru.pengumuman');
     });
 
     // Wali Kelas
     Route::middleware(['role:wali-kelas'])->group(function () {
         Route::inertia('/wali-kelas', 'wali-kelas/DashboardWaliPage')->name('wali.dashboard');
-        Route::inertia('/wali-kelas/bimbingan', 'wali-kelas/BimbinganPage')->name('wali.bimbingan');
+        
+        // Bimbingan Konseling Wali Kelas
+        Route::get('/wali-kelas/bimbingan', [BimbinganController::class, 'index'])->name('wali.bimbingan');
+        Route::post('/wali-kelas/bimbingan', [BimbinganController::class, 'store'])->name('wali.bimbingan.store');
+        Route::put('/wali-kelas/bimbingan/{bimbingan}', [BimbinganController::class, 'update'])->name('wali.bimbingan.update');
+        Route::delete('/wali-kelas/bimbingan/{bimbingan}', [BimbinganController::class, 'destroy'])->name('wali.bimbingan.destroy');
+
         Route::inertia('/wali-kelas/dossier', 'wali-kelas/DossierSiswaPage')->name('wali.dossier');
         Route::inertia('/wali-kelas/presensi', 'wali-kelas/PresensiKelasPage')->name('wali.presensi');
-        Route::inertia('/wali-kelas/rekap-nilai', 'wali-kelas/RekapNilaiPage')->name('wali.rekap-nilai');
-        Route::inertia('/wali-kelas/pengumuman', 'wali-kelas/PengumumanWaliPage')->name('wali.pengumuman');
+        
+        // Rekap Nilai & Rapor Wali Kelas
+        Route::get('/wali-kelas/rekap-nilai', [ReportCardController::class, 'rekapNilai'])->name('wali.rekap-nilai');
+        Route::post('/wali-kelas/rapor/publish', [ReportCardController::class, 'publish'])->name('wali.rapor.publish');
+
+        Route::get('/wali-kelas/pengumuman', [AnnouncementController::class, 'waliKelasIndex'])->name('wali.pengumuman');
     });
 
     // Siswa
     Route::middleware(['role:siswa'])->group(function () {
-        Route::inertia('/siswa', 'siswa/StudentDashboardPage')->name('siswa.dashboard');
+        Route::get('/siswa', [DashboardPortalController::class, 'studentDashboard'])->name('siswa.dashboard');
         Route::get('/siswa/library', [ExtraFeatureController::class, 'library'])->name('siswa.library');
-        Route::inertia('/siswa/schedule', 'siswa/SchedulePage')->name('siswa.schedule');
-        Route::inertia('/siswa/rapor', 'siswa/RaporPage')->name('siswa.rapor');
+        Route::get('/siswa/schedule', [ScheduleController::class, 'studentSchedule'])->name('siswa.schedule');
+        Route::get('/siswa/rapor', [ReportCardController::class, 'studentReport'])->name('siswa.rapor');
         Route::inertia('/siswa/profil', 'siswa/ProfilPage')->name('siswa.profil');
-        Route::inertia('/siswa/presensi', 'siswa/PresensiPage')->name('siswa.presensi');
-        Route::inertia('/siswa/pengumuman', 'siswa/AnnouncementsPage')->name('siswa.pengumuman');
-        Route::inertia('/siswa/nilai', 'siswa/NilaiPage')->name('siswa.nilai');
+        Route::get('/siswa/presensi', [AttendanceController::class, 'studentAttendance'])->name('siswa.presensi');
+        Route::get('/siswa/pengumuman', [AnnouncementController::class, 'siswaIndex'])->name('siswa.pengumuman');
+        Route::get('/siswa/nilai', [GradeController::class, 'studentGrades'])->name('siswa.nilai');
         Route::inertia('/siswa/materi', 'siswa/MateriPage')->name('siswa.materi');
     });
 
     // Orang Tua
     Route::middleware(['role:orang-tua'])->group(function () {
-        Route::inertia('/orang-tua', 'orangtua/DashboardOrangTuaPage')->name('orangtua.dashboard');
-        Route::inertia('/orang-tua/nilai', 'orangtua/NilaiAnakPage')->name('orangtua.nilai');
+        Route::get('/orang-tua', [DashboardPortalController::class, 'parentDashboard'])->name('orangtua.dashboard');
+        Route::get('/orang-tua/nilai', [GradeController::class, 'childGrades'])->name('orangtua.nilai');
         Route::inertia('/orang-tua/presensi', 'orangtua/PresensiAnakPage')->name('orangtua.presensi');
         Route::get('/orang-tua/keuangan', [PaymentController::class, 'index'])->name('orangtua.keuangan');
-        Route::inertia('/orang-tua/pengumuman', 'orangtua/PengumumanOrangTuaPage')->name('orangtua.pengumuman');
+        Route::get('/orang-tua/pengumuman', [AnnouncementController::class, 'orangTuaIndex'])->name('orangtua.pengumuman');
     });
+
+    // Pengumuman CRUD (Admin & Wali Kelas & Guru)
+    Route::post('/pengumuman', [AnnouncementController::class, 'store'])->name('pengumuman.store');
+    Route::put('/pengumuman/{announcement}', [AnnouncementController::class, 'update'])->name('pengumuman.update');
+    Route::delete('/pengumuman/{announcement}', [AnnouncementController::class, 'destroy'])->name('pengumuman.destroy');
 });
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])

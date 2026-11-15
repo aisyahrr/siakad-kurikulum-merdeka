@@ -15,6 +15,11 @@ class Student extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'parent_user_id');
+    }
+
     public function classStudents(): HasMany
     {
         return $this->hasMany(ClassStudent::class);
@@ -28,5 +33,15 @@ class Student extends Model
     public function grades(): HasMany
     {
         return $this->hasMany(Grade::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function currentClass(): ?SchoolClass
+    {
+        return $this->classStudents()->latest()->first()?->schoolClass;
     }
 }

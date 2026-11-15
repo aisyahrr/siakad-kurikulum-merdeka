@@ -13,6 +13,15 @@ return new class extends Migration
     {
         Schema::create('quiz_submissions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('quiz_id')->constrained('quizzes')->cascadeOnDelete();
+            $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
+            $table->decimal('mcq_score', 5, 2)->default(0);
+            $table->decimal('essay_score', 5, 2)->nullable();
+            $table->decimal('total_score', 5, 2)->nullable();
+            $table->boolean('is_graded')->default(false);
+            $table->text('feedback')->nullable();
+            $table->dateTime('submitted_at')->nullable();
+            $table->unique(['quiz_id', 'student_id']);
             $table->timestamps();
         });
     }

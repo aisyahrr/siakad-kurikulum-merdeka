@@ -25,9 +25,37 @@ interface MeetingItem {
   quizStatus?: string;
 }
 
-export default function PertemuanPage() {
-  const [items, setItems] = useState<MeetingItem[]>(() =>
-    initialMeetings.map((item, idx) => ({
+interface PertemuanPageProps {
+  dbMeetings?: Array<{
+    id: number;
+    title: string;
+    session_no: number;
+    date: string;
+    status: "Terbit" | "Draft";
+    summary?: string;
+    school_class?: { id: number; name: string };
+    subject?: { id: number; name: string };
+  }>;
+}
+
+export default function PertemuanPage({ dbMeetings }: PertemuanPageProps = {}) {
+  const [items, setItems] = useState<MeetingItem[]>(() => {
+    if (dbMeetings && dbMeetings.length > 0) {
+      return dbMeetings.map((item) => ({
+        id: `meeting-${item.id}`,
+        title: item.title,
+        subject: item.subject?.name ?? "Mata Pelajaran",
+        rombel: item.school_class?.name ?? "Kelas",
+        sessionNo: `P${String(item.session_no).padStart(2, "0")}`,
+        date: item.date,
+        students: 36,
+        status: item.status,
+        summary: item.summary ?? "Pendalaman capaian pembelajaran dan modul ajar.",
+        filePdf: `Modul_${item.title.replace(/\s+/g, "_")}.pdf`,
+        quizStatus: "Belum Ada Kuis",
+      }));
+    }
+    return initialMeetings.map((item, idx) => ({
       id: `meeting-${idx + 1}`,
       title: item.title,
       subject: item.subject,
@@ -40,8 +68,8 @@ export default function PertemuanPage() {
         "Pendalaman capaian pembelajaran dan aplikasi konsep terapan sesuai capaian tujuan modul.",
       filePdf: `Modul_${item.title.replace(/\s+/g, "_")}.pdf`,
       quizStatus: idx % 2 === 0 ? "Kuis Aktif (34/36 Mengerjakan)" : "Belum Ada Kuis",
-    }))
-  );
+    }));
+  });
 
   const [modal, setModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");

@@ -1,11 +1,52 @@
 import { Link } from "@inertiajs/react";
 import {
   Phone,
+  CreditCard,
 } from "lucide-react";
 
-export default function DashboardOrangTuaPage() {
+interface DashboardOrangTuaProps {
+  studentInfo?: {
+    name?: string;
+    nisn?: string;
+    rombel?: string;
+    academicYear?: string;
+    homeroomTeacher?: string;
+    homeroomPhone?: string;
+    todayStatus?: string;
+    overallAverage?: number;
+    rank?: number;
+    attendanceRate?: number;
+  };
+  urgentAlerts?: Array<{
+    id: number;
+    title: string;
+    date: string;
+    desc: string;
+    isImportant?: boolean;
+  }>;
+  recentGrades?: Array<{
+    subject: string;
+    type: string;
+    score: number;
+    kktp: number;
+  }>;
+  payments?: Array<{
+    id: number;
+    title: string;
+    amount: number;
+    status: "pending" | "lunas";
+    due_date: string;
+  }>;
+}
+
+export default function DashboardOrangTuaPage({
+  studentInfo: propStudentInfo,
+  urgentAlerts: propUrgentAlerts,
+  recentGrades: propRecentGrades,
+  payments = [],
+}: DashboardOrangTuaProps = {}) {
   // Data profil anak yang terhubung ke akun orang tua
-  const studentInfo = {
+  const defaultStudentInfo = {
     name: "Alya Putri",
     nisn: "0064928110",
     rombel: "XII MIPA 1",
@@ -18,7 +59,12 @@ export default function DashboardOrangTuaPage() {
     attendanceRate: 96.7,
   };
 
-  const urgentAlerts = [
+  const studentInfo = {
+    ...defaultStudentInfo,
+    ...propStudentInfo,
+  };
+
+  const defaultUrgentAlerts = [
     {
       id: 1,
       title: "Undangan Pertemuan Wali Murid",
@@ -28,11 +74,15 @@ export default function DashboardOrangTuaPage() {
     },
   ];
 
-  const recentGrades = [
+  const urgentAlerts = propUrgentAlerts && propUrgentAlerts.length > 0 ? propUrgentAlerts : defaultUrgentAlerts;
+
+  const defaultRecentGrades = [
     { subject: "Matematika Peminatan", type: "Formatif #4", score: 92, kktp: 70 },
     { subject: "Fisika Lanjutan", type: "STS Ganjil", score: 88, kktp: 70 },
     { subject: "Kimia Terapan", type: "Kuis Stoikiometri", score: 90, kktp: 70 },
   ];
+
+  const recentGrades = propRecentGrades && propRecentGrades.length > 0 ? propRecentGrades : defaultRecentGrades;
 
   return (
     <section className="space-y-6">
@@ -182,6 +232,37 @@ export default function DashboardOrangTuaPage() {
           </div>
         </div>
       </div>
+
+      {/* PANEL SPP & ADMINISTRASI */}
+      {payments && payments.length > 0 && (
+        <div className="rounded-[28px] bg-[#e9eef3] p-5 shadow-[5px_5px_12px_#cbd3db,-5px_-5px_12px_#fff]">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <CreditCard size={18} className="text-[#17345b]" />
+              <h2 className="text-sm font-extrabold text-[#17345b]">Status Pembayaran & SPP Terkini</h2>
+            </div>
+            <Link href="/orang-tua/keuangan" className="text-xs font-bold text-[#087b79] hover:underline">
+              Kelola Pembayaran
+            </Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {payments.slice(0, 3).map((p) => (
+              <div key={p.id} className="rounded-2xl bg-[#edf2f6] p-3.5 shadow-[inset_2px_2px_4px_#cbd3db,inset_-2px_-2px_4px_#fff] flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-bold text-[#17345b]">{p.title}</h4>
+                  <span className="text-[10px] text-[#68777c]">Jatuh Tempo: {p.due_date}</span>
+                </div>
+                <div className="text-right">
+                  <span className="block text-xs font-extrabold text-[#17345b]">Rp {Number(p.amount).toLocaleString('id-ID')}</span>
+                  <span className={`inline-block text-[9px] font-black uppercase rounded-full px-2 py-0.5 ${p.status === 'lunas' ? 'bg-[#dcebea] text-[#087b79]' : 'bg-[#fef3c7] text-[#92400e]'}`}>
+                    {p.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

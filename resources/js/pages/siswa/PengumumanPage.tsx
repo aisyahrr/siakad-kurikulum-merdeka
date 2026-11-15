@@ -16,7 +16,50 @@ import {
 } from "lucide-react";
 import { useAnnouncements } from "@/hooks/siswa/useAnnouncements";
 
-export default function AnnouncementsPage() {
+interface AnnouncementsPageProps {
+  dbAnnouncements?: Array<{
+    id: number;
+    title: string;
+    content: string;
+    category: "Akademik" | "Ujian & Penilaian" | "Kegiatan Siswa" | "Penting / Mendesak";
+    badge_text?: string;
+    reference_code?: string;
+    is_pinned?: boolean;
+    created_at?: string;
+    author?: { name: string };
+  }>;
+}
+
+export default function AnnouncementsPage({ dbAnnouncements }: AnnouncementsPageProps = {}) {
+  const mappedInitial = dbAnnouncements && dbAnnouncements.length > 0
+    ? dbAnnouncements.map((item) => ({
+        id: item.id,
+        badgeText: item.badge_text ?? "! PENTING • PENGUMUMAN",
+        badgeType: "primary" as const,
+        category: item.category,
+        referenceCode: item.reference_code ?? "WARTA RESMI",
+        isPinned: item.is_pinned ?? false,
+        isArchived: false,
+        isRead: false,
+        title: item.title,
+        date: item.created_at
+          ? new Date(item.created_at).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })
+          : "Hari Ini",
+        author: item.author?.name ?? "Sekolah & Akademik",
+        description: item.content,
+        attachment: {
+          fileName: "Lampiran_Pengumuman.pdf",
+          fileSize: "1.2 MB",
+        },
+        image:
+          "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=700&q=80",
+      }))
+    : undefined;
+
   const {
     activeTab,
     setActiveTab,
@@ -31,7 +74,7 @@ export default function AnnouncementsPage() {
     toggleBookmark,
     activeModalItem,
     setActiveModalItem,
-  } = useAnnouncements();
+  } = useAnnouncements(mappedInitial);
 
   return (
     <div className="space-y-6">

@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('quiz_questions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('quiz_id')->constrained('quizzes')->cascadeOnDelete();
+            $table->text('question_text');
+            $table->enum('type', ['mcq', 'essay'])->default('mcq');
+            $table->integer('points')->default(10);
             $table->timestamps();
         });
     }

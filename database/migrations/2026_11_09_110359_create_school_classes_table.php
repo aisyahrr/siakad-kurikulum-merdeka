@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('school_classes', function (Blueprint $table) {
             $table->id();
+            $table->string('name', 255);
+            $table->string('grade_level', 50);
+            $table->foreignId('wali_kelas_id')->nullable()->constrained('teachers')->nullOnDelete();
             $table->timestamps();
         });
     }

@@ -45,8 +45,98 @@ function ScheduleStatus({ status }: { status: string }) {
   );
 }
 
-export default function StudentDashboardPage() {
-  const { student, attendance, schedules, announcements } = useStudentDashboard();
+interface StudentDashboardProps {
+  dbStudent?: {
+    id?: number;
+    name: string;
+    nisn: string;
+    rombel: string;
+    gpa: number;
+    rank: number;
+    semester: string;
+  };
+  dbAttendance?: {
+    present: number;
+    sick: number;
+    permission: number;
+    absent: number;
+    percentage: number;
+    total: number;
+  };
+  dbSchedules?: Array<{
+    id: number | string;
+    session: number;
+    time: string;
+    subject: string;
+    teacher: string;
+    room: string;
+    type: string;
+    status: "Selesai" | "Sedang Berlangsung" | "Mendatang";
+  }>;
+  dbPayments?: {
+    unpaid_count: number;
+    unpaid_amount: number;
+    list?: any[];
+  };
+  dbAnnouncements?: Array<{
+    id: number;
+    title: string;
+    category: string;
+    created_at?: string;
+  }>;
+}
+
+export default function StudentDashboardPage({
+  dbStudent,
+  dbAttendance,
+  dbSchedules,
+  dbPayments,
+  dbAnnouncements,
+}: StudentDashboardProps = {}) {
+  const {
+    student: defaultStudent,
+    attendance: defaultAttendance,
+    schedules: defaultSchedules,
+    announcements: defaultAnnouncements,
+  } = useStudentDashboard();
+
+  const student = {
+    ...defaultStudent,
+    ...(dbStudent
+      ? {
+          name: dbStudent.name,
+          nisn: dbStudent.nisn,
+          gpa: dbStudent.gpa,
+          rank: dbStudent.rank,
+          semester: dbStudent.semester,
+        }
+      : {}),
+  };
+
+  const attendance = {
+    ...defaultAttendance,
+    ...(dbAttendance
+      ? {
+          present: dbAttendance.present,
+          sick: dbAttendance.sick,
+          permission: dbAttendance.permission,
+          absent: dbAttendance.absent,
+          percentage: dbAttendance.percentage,
+        }
+      : {}),
+  };
+
+  const schedules = dbSchedules && dbSchedules.length > 0 ? dbSchedules : defaultSchedules;
+
+  const announcements =
+    dbAnnouncements && dbAnnouncements.length > 0
+      ? dbAnnouncements.map((a) => ({
+          id: a.id,
+          title: a.title,
+          category: a.category,
+          date: a.created_at ? new Date(a.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "Terbaru",
+        }))
+      : defaultAnnouncements;
 
   return (
     <div className="space-y-8 pb-12">
@@ -237,6 +327,24 @@ export default function StudentDashboardPage() {
           </div>
         </Card>
       </div>
+
+      {/* SPP ALERT (JIKA ADA TAGIHAN PENDING) */}
+      {dbPayments && dbPayments.unpaid_count > 0 && (
+        <div className="flex flex-col gap-3 rounded-2xl bg-[#E4EBF5] p-4 sm:flex-row sm:items-center sm:justify-between shadow-[inset_3px_3px_6px_#cbced1,inset_-3px_-3px_6px_#ffffff] border-l-4 border-[#B18A42]">
+          <div className="flex items-center gap-3">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#E4EBF5] text-[#B18A42] shadow-[4px_4px_8px_#cbced1]">
+              <Info size={18} />
+            </span>
+            <div>
+              <h4 className="text-sm font-bold text-[#17345B]">Status Pembayaran SPP</h4>
+              <p className="text-xs text-[#64748B]">
+                Terdapat {dbPayments.unpaid_count} tagihan SPP belum diselesaikan (Total: Rp {Number(dbPayments.unpaid_amount).toLocaleString('id-ID')}).
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-bold text-[#B18A42]">Hubungi Bagian Keuangan / Orang Tua</span>
+        </div>
+      )}
 
       {/* TODAY SCHEDULE */}
       <section>

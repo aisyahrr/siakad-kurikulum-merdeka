@@ -16,27 +16,56 @@ interface ParentAnnouncement {
   attachmentName?: string;
 }
 
-export default function PengumumanOrangTuaPage() {
-  const [announcements] = useState<ParentAnnouncement[]>([
-    {
-      id: "1",
-      title: "Undangan Rapat Evaluasi Capaian Belajar Tengah Semester (STS)",
-      category: "Pertemuan Ortu",
-      date: "26 Oktober 2024",
-      excerpt: "Mengundang bapak/ibu orang tua/wali murid XII MIPA 1 dalam rangka koordinasi hasil belajar dan penguatan karakter siswa.",
-      content: "Yth. Bapak/Ibu Orang Tua/Wali Murid kelas XII MIPA 1, sehubungan dengan berakhirnya masa asesmen Sumatif Tengah Semester (STS) Ganjil, kami mengundang kehadiran Bapak/Ibu pada hari Sabtu, 2 November 2024 pukul 09.00 WIB bertempat di Ruang Kelas XII MIPA 1.",
-      attachmentName: "Undangan_Rapat_Wali_Murid_XII_MIPA1.pdf",
-    },
-    {
-      id: "2",
-      title: "Kalender Libur Semester Ganjil & Jadwal Pembagian Rapor",
-      category: "Akademik",
-      date: "20 Oktober 2024",
-      excerpt: "Informasi jadwal asesmen akhir semester dan tanggal pembagian rapor digital tahun ajaran 2024/2025.",
-      content: "Diberitahukan kepada seluruh orang tua siswa, pelaksanaan SAS akan dimulai tanggal 2–12 Desember 2024. Pembagian lembar rapor dilaksanakan pada 20 Desember 2024.",
-      attachmentName: "Kalender_Akademik_2024_2025.pdf",
-    },
-  ]);
+interface PengumumanOrangTuaProps {
+  dbAnnouncements?: Array<{
+    id: number;
+    title: string;
+    content: string;
+    category: string;
+    created_at?: string;
+  }>;
+}
+
+export default function PengumumanOrangTuaPage({ dbAnnouncements }: PengumumanOrangTuaProps = {}) {
+  const [announcements] = useState<ParentAnnouncement[]>(() => {
+    if (dbAnnouncements && dbAnnouncements.length > 0) {
+      return dbAnnouncements.map((item) => ({
+        id: String(item.id),
+        title: item.title,
+        category: item.category,
+        date: item.created_at
+          ? new Date(item.created_at).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })
+          : "Hari Ini",
+        excerpt: item.content.length > 130 ? item.content.substring(0, 130) + "..." : item.content,
+        content: item.content,
+        attachmentName: "Lampiran_Pengumuman.pdf",
+      }));
+    }
+    return [
+      {
+        id: "1",
+        title: "Undangan Rapat Evaluasi Capaian Belajar Tengah Semester (STS)",
+        category: "Pertemuan Ortu",
+        date: "26 Oktober 2024",
+        excerpt: "Mengundang bapak/ibu orang tua/wali murid XII MIPA 1 dalam rangka koordinasi hasil belajar dan penguatan karakter siswa.",
+        content: "Yth. Bapak/Ibu Orang Tua/Wali Murid kelas XII MIPA 1, sehubungan dengan berakhirnya masa asesmen Sumatif Tengah Semester (STS) Ganjil, kami mengundang kehadiran Bapak/Ibu pada hari Sabtu, 2 November 2024 pukul 09.00 WIB bertempat di Ruang Kelas XII MIPA 1.",
+        attachmentName: "Undangan_Rapat_Wali_Murid_XII_MIPA1.pdf",
+      },
+      {
+        id: "2",
+        title: "Kalender Libur Semester Ganjil & Jadwal Pembagian Rapor",
+        category: "Akademik",
+        date: "20 Oktober 2024",
+        excerpt: "Informasi jadwal asesmen akhir semester dan tanggal pembagian rapor digital tahun ajaran 2024/2025.",
+        content: "Diberitahukan kepada seluruh orang tua siswa, pelaksanaan SAS akan dimulai tanggal 2–12 Desember 2024. Pembagian lembar rapor dilaksanakan pada 20 Desember 2024.",
+        attachmentName: "Kalender_Akademik_2024_2025.pdf",
+      },
+    ];
+  });
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedItem, setSelectedItem] = useState<ParentAnnouncement | null>(null);

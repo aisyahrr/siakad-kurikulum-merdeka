@@ -11,13 +11,31 @@ import {
 import { Header } from "./shared";
 import { schedules, subjects, rombels } from "@/data/academic.data";
 
-export default function JadwalGuruPage() {
+interface ScheduleItem {
+  id: string;
+  day: string;
+  time: string;
+  subjectId: string;
+  teacherId: string;
+  rombelId: string;
+  room: string;
+  topic: string;
+  sks: number;
+  subjectName?: string;
+  rombelName?: string;
+}
+
+interface JadwalGuruPageProps {
+  dbSchedules?: ScheduleItem[];
+}
+
+export default function JadwalGuruPage({ dbSchedules }: JadwalGuruPageProps = {}) {
   const [selectedDay, setSelectedDay] = useState("Semua");
   const days = ["Semua", "Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
 
-  const teacherSchedules = schedules.filter(
-    (item) => item.teacherId === "teacher-hendra",
-  );
+  const teacherSchedules = (dbSchedules && dbSchedules.length > 0)
+    ? dbSchedules
+    : schedules.filter((item) => item.teacherId === "teacher-hendra");
 
   const filteredItems = teacherSchedules.filter(
     (item) => selectedDay === "Semua" || item.day === selectedDay,
@@ -66,9 +84,11 @@ export default function JadwalGuruPage() {
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {filteredItems.map((item) => {
           const subjectName =
+            item.subjectName ??
             subjects.find((subject) => subject.id === item.subjectId)?.name ??
             "Mata Pelajaran";
           const rombelName =
+            item.rombelName ??
             rombels.find((rombel) => rombel.id === item.rombelId)?.name ??
             "Kelas";
 

@@ -42,9 +42,38 @@ interface StudentSubmission {
   isGraded: boolean;
 }
 
-export default function KuisPage() {
-  const [items, setItems] = useState<QuizItem[]>(() =>
-    initialQuizzes.map((item, idx) => ({
+interface KuisPageProps {
+  dbQuizzes?: Array<{
+    id: number;
+    title: string;
+    type: string;
+    duration: number;
+    status: "Terbit" | "Draft";
+    school_class?: { id: number; name: string };
+    subject?: { id: number; name: string };
+    submissions_count?: number;
+    questions?: Array<{ id: number; type: string }>;
+  }>;
+}
+
+export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
+  const [items, setItems] = useState<QuizItem[]>(() => {
+    if (dbQuizzes && dbQuizzes.length > 0) {
+      return dbQuizzes.map((item) => ({
+        id: `quiz-${item.id}`,
+        title: item.title,
+        subject: item.subject?.name ?? "Mata Pelajaran",
+        rombel: item.school_class?.name ?? "XII MIPA 1",
+        type: item.type,
+        duration: item.duration,
+        mcqCount: item.questions?.filter((q) => q.type === "mcq").length || 10,
+        essayCount: item.questions?.filter((q) => q.type === "essay").length || 2,
+        responses: item.submissions_count || 0,
+        totalStudents: 36,
+        status: item.status,
+      }));
+    }
+    return initialQuizzes.map((item, idx) => ({
       id: `quiz-${idx + 1}`,
       title: item.title,
       subject: item.subject,
@@ -56,8 +85,8 @@ export default function KuisPage() {
       responses: Number(item.responses) || 32,
       totalStudents: 36,
       status: (item.status as "Terbit" | "Draft") ?? "Terbit",
-    }))
-  );
+    }));
+  });
 
   const [modalCreate, setModalCreate] = useState(false);
   const [modalGrading, setModalGrading] = useState<QuizItem | null>(null);

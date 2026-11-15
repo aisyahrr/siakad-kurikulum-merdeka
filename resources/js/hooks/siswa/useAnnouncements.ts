@@ -94,8 +94,10 @@ const INITIAL_ANNOUNCEMENTS: Announcement[] = [
   },
 ];
 
-export function useAnnouncements() {
-  const [announcements] = useState<Announcement[]>(INITIAL_ANNOUNCEMENTS);
+export function useAnnouncements(initialItems?: Announcement[]) {
+  const [announcements] = useState<Announcement[]>(
+    initialItems && initialItems.length > 0 ? initialItems : INITIAL_ANNOUNCEMENTS
+  );
   const [activeTab, setActiveTab] = useState<"active" | "archive">("active");
   const [selectedCategory, setSelectedCategory] = useState<string>("Semua");
   const [searchQuery, setSearchQuery] = useState<string>("");

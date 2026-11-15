@@ -11,8 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('assessment_components', function (Blueprint $table) {
+        Schema::create('teachers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('nip')->nullable()->unique();
+            $table->string('nidn')->nullable()->unique();
+            $table->enum('gender', ['L', 'P'])->nullable();
+            $table->string('phone')->nullable();
             $table->timestamps();
         });
     }
@@ -22,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('assessment_components');
+        Schema::dropIfExists('teachers');
     }
 };

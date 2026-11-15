@@ -22,45 +22,74 @@ interface GuidanceLog {
   status: "Dalam Pemantauan" | "Tuntas";
 }
 
-export default function BimbinganPage() {
-  const [logs, setLogs] = useState<GuidanceLog[]>([
-    {
-      id: "log-1",
-      studentName: "Bagas Ramadhan",
-      nisn: "0064928111",
-      category: "Presensi",
-      date: "25 Oktober 2024",
-      issue: "Akumulasi ketidakhadiran tanpa keterangan (alpa) mencapai 10 sesi.",
-      actionPlan: "Konseling individual, pembuatan komitmen kehadiran tertulis, dan pemanggilan orang tua ke sekolah.",
-      parentContacted: true,
-      parentPhone: "6281298765432",
-      status: "Dalam Pemantauan",
-    },
-    {
-      id: "log-2",
-      studentName: "Dimas Pratama",
-      nisn: "0064928113",
-      category: "Akademik",
-      date: "20 Oktober 2024",
-      issue: "Penurunan performa pada asesmen tengah semester Fisika Lanjutan (<KKTP).",
-      actionPlan: "Pemberian materi pengayaan dan tutor sebaya bersama Alya Putri (Rank #1).",
-      parentContacted: false,
-      parentPhone: "6281234567890",
-      status: "Dalam Pemantauan",
-    },
-    {
-      id: "log-3",
-      studentName: "Fajar Nugraha",
-      nisn: "0064928115",
-      category: "Kedisiplinan",
-      date: "14 Oktober 2024",
-      issue: "Keterlambatan masuk kelas jam pertama sebanyak 4 kali dalam sebulan.",
-      actionPlan: "Pemberian sanksi edukatif merangkum buku literasi dan evaluasi jam keberangkatan dari rumah.",
-      parentContacted: true,
-      parentPhone: "6281311223344",
-      status: "Tuntas",
-    },
-  ]);
+interface BimbinganPageProps {
+  dbLogs?: Array<{
+    id: number;
+    category: "Akademik" | "Kedisiplinan" | "Presensi" | "Karakter";
+    date: string;
+    issue: string;
+    action_plan: string;
+    parent_contacted: boolean;
+    status: "Dalam Pemantauan" | "Tuntas";
+    student?: { nisn: string; user?: { name: string; phone?: string } };
+  }>;
+}
+
+export default function BimbinganPage({ dbLogs }: BimbinganPageProps = {}) {
+  const [logs, setLogs] = useState<GuidanceLog[]>(() => {
+    if (dbLogs && dbLogs.length > 0) {
+      return dbLogs.map((item) => ({
+        id: `log-${item.id}`,
+        studentName: item.student?.user?.name ?? "Siswa",
+        nisn: item.student?.nisn ?? "0064928110",
+        category: item.category,
+        date: item.date,
+        issue: item.issue,
+        actionPlan: item.action_plan,
+        parentContacted: item.parent_contacted,
+        parentPhone: item.student?.user?.phone ?? "6281298765432",
+        status: item.status,
+      }));
+    }
+    return [
+      {
+        id: "log-1",
+        studentName: "Bagas Ramadhan",
+        nisn: "0064928111",
+        category: "Presensi",
+        date: "25 Oktober 2024",
+        issue: "Akumulasi ketidakhadiran tanpa keterangan (alpa) mencapai 10 sesi.",
+        actionPlan: "Konseling individual, pembuatan komitmen kehadiran tertulis, dan pemanggilan orang tua ke sekolah.",
+        parentContacted: true,
+        parentPhone: "6281298765432",
+        status: "Dalam Pemantauan",
+      },
+      {
+        id: "log-2",
+        studentName: "Dimas Pratama",
+        nisn: "0064928113",
+        category: "Akademik",
+        date: "20 Oktober 2024",
+        issue: "Penurunan performa pada asesmen tengah semester Fisika Lanjutan (<KKTP).",
+        actionPlan: "Pemberian materi pengayaan dan tutor sebaya bersama Alya Putri (Rank #1).",
+        parentContacted: false,
+        parentPhone: "6281234567890",
+        status: "Dalam Pemantauan",
+      },
+      {
+        id: "log-3",
+        studentName: "Fajar Nugraha",
+        nisn: "0064928115",
+        category: "Kedisiplinan",
+        date: "14 Oktober 2024",
+        issue: "Keterlambatan masuk kelas jam pertama sebanyak 4 kali dalam sebulan.",
+        actionPlan: "Pemberian sanksi edukatif merangkum buku literasi dan evaluasi jam keberangkatan dari rumah.",
+        parentContacted: true,
+        parentPhone: "6281311223344",
+        status: "Tuntas",
+      },
+    ];
+  });
 
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("Semua");
