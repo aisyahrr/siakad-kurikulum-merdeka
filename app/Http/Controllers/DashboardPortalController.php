@@ -179,7 +179,7 @@ class DashboardPortalController extends Controller
                 'name' => $child?->user?->name ?? 'Alya Putri',
                 'nisn' => $child?->nisn ?? '0064928110',
                 'rombel' => $currentClass?->name ?? 'XII MIPA 1',
-                'academicYear' => ($activeYear ? "{$activeYear->year} ({$activeYear->semester})" : '2024/2025 (Ganjil)'),
+                'academicYear' => ($activeYear ? "{$activeYear->name} ({$activeYear->semester})" : '2024/2025 (Ganjil)'),
                 'homeroomTeacher' => $wali?->user?->name ?? 'Drs. Hendra Setiawan, M.Pd',
                 'homeroomPhone' => $wali?->phone ?? '6281234567890',
                 'todayStatus' => $todayStatus,

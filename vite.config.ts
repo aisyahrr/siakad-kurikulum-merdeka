@@ -6,7 +6,21 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig, lazyPlugins } from 'vite-plus';
+import fs from 'fs';
 import path from 'path';
+
+const getPhpCommand = () => {
+    const candidates = [
+        'D:/LARAGON/bin/php/php-8.3/php.exe',
+        'C:/laragon/bin/php/php-8.3.31-Win32-vs16-x64/php.exe',
+    ];
+    for (const bin of candidates) {
+        if (fs.existsSync(bin)) {
+            return `"${bin}" artisan wayfinder:generate`;
+        }
+    }
+    return 'php artisan wayfinder:generate';
+};
 
 export default defineConfig({
     resolve: {
@@ -32,7 +46,7 @@ export default defineConfig({
         tailwindcss(),
         wayfinder({
             formVariants: true,
-            command: '"D:/LARAGON/bin/php/php-8.3/php.exe" artisan wayfinder:generate',
+            command: getPhpCommand(),
         }),
     ]),
     server: {

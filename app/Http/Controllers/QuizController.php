@@ -44,7 +44,7 @@ class QuizController extends Controller
         $teacher = $request->user()->teacher;
 
         $validated = $request->validate($this->quizRules());
-        $questions = $this->validateQuestions($request);
+        $questions = $request->filled('questions') ? $this->validateQuestions($request) : [];
 
         $validated['teacher_id'] = $teacher?->id;
 
@@ -268,7 +268,7 @@ class QuizController extends Controller
     private function validateQuestions(Request $request): array
     {
         $validated = $request->validate([
-            'questions' => 'required|array|min:1',
+            'questions' => 'nullable|array',
             'questions.*.question_text' => 'required|string',
             'questions.*.type' => 'required|in:mcq,essay',
             'questions.*.points' => 'nullable|integer|min:1|max:100',
@@ -277,7 +277,7 @@ class QuizController extends Controller
             'questions.*.options.*.is_correct' => 'nullable|boolean',
         ]);
 
-        foreach ($validated['questions'] as $index => $question) {
+        foreach ($validated['questions'] ?? [] as $index => $question) {
             if ($question['type'] !== 'mcq') {
                 continue;
             }

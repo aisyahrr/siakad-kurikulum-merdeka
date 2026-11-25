@@ -8,7 +8,14 @@ import {
   Calendar,
   School,
   IdCard,
+  KeyRound,
+  Download,
+  Copy,
+  Check,
   GraduationCap,
+  Award,
+  Sparkles,
+  QrCode,
   Fingerprint,
 } from "lucide-react";
 import { PageTitle } from "@/components/ui/page-title";
@@ -30,6 +37,9 @@ interface SharedData {
         parent_name: string;
         parent_phone: string;
         entry_year: string;
+        school_class?: {
+          name: string;
+        };
       } | null;
     };
   };
@@ -38,6 +48,13 @@ interface SharedData {
 export default function ProfilePage() {
   const { auth } = usePage<SharedData>().props;
   const student = auth.user.student;
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string, key: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
 
   const studentDetails = [
     {
@@ -101,6 +118,7 @@ export default function ProfilePage() {
         description="Informasi data diri, status administrasi Dapodik, dan kredensial peserta didik terdaftar."
       />
 
+      {/* HERO PROFILE CARD */}
       <div className="relative overflow-hidden rounded-[34px] bg-[#e9eef3] p-6 shadow-[9px_9px_22px_#cbd3db,-9px_-9px_22px_#fff] sm:p-9">
         <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
@@ -122,83 +140,23 @@ export default function ProfilePage() {
               <p className="text-xs font-semibold text-[#68777c]">
                 NISN: <span className="font-bold text-[#20272d]">{student?.nisn ?? "-"}</span>
               </p>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* ... (rest of the sections remain but use studentDetails, personalData, guardianInfo mapped data) */}
-      <div className="grid gap-6 lg:grid-cols-2">
-         <div className="space-y-4">
-             {studentDetails.map((detail, i) => (
-                 <div key={i} className="flex items-center gap-4 rounded-2xl bg-[#e9eef3] p-4 shadow-[3px_3px_6px_#cbd3db,-3px_-3px_6px_#fff]">
-                     <detail.icon className="text-[#17345b]" />
-                     <div>
-                         <p className="text-[10px] uppercase font-bold text-[#68777c]">{detail.label}</p>
-                         <p className="text-sm font-bold text-[#20272d]">{detail.value}</p>
-                     </div>
-                 </div>
-             ))}
-         </div>
-{/* CONTACT INFO */}
-                <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <div className="inline-flex items-center gap-1.5">
-                    <Mail size={13} className="text-[#17345b]" />
-                    {student.email || "ahmad.rayhan@student.lentera.sch.id"}
-                  </div>
-                  <div className="inline-flex items-center gap-1.5">
-                    <Phone size={13} className="text-[#17345b]" />
-                    +62 821-4402-9981
-                  </div>
-                </div>
-</div>
-        </div>
-      </div>
-    );
-}
 
-          {/* QUICK ACADEMIC BADGES */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-3 rounded-2xl bg-[#edf2f6] p-3.5 shadow-[4px_4px_9px_#cbd3db,-4px_-4px_9px_#fff]">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#e9eef3] text-[#17345b] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff]">
-                <Award size={18} />
-              </span>
-              <div>
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-[#68777c]">
-                  IPK Kumulatif
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-[#5f6f76]">
+                <span className="inline-flex items-center gap-1.5">
+                  <Mail size={13} className="text-[#17345b]" />
+                  {auth.user.email}
                 </span>
-                <strong className="text-base font-extrabold text-[#17345b]">
-                  {student.gpa}{" "}
-                  <small className="text-xs font-normal text-[#68777c]">
-                    / 100
-                  </small>
-                </strong>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 rounded-2xl bg-[#edf2f6] p-3.5 shadow-[4px_4px_9px_#cbd3db,-4px_-4px_9px_#fff]">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#e9eef3] text-[#17345b] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff]">
-                <Sparkles size={18} />
-              </span>
-              <div>
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-[#68777c]">
-                  Peringkat Kelas
+                <span className="inline-flex items-center gap-1.5">
+                  <Phone size={13} className="text-[#17345b]" />
+                  {student?.parent_phone ?? "+62 821-4402-9981"}
                 </span>
-                <strong className="text-base font-extrabold text-[#20272d]">
-                  #{student.rank}{" "}
-                  <small className="text-xs font-normal text-[#68777c]">
-                    dari 36
-                  </small>
-                </strong>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* =========================================================
-          MAIN CONTENT GRID: DATA AKADEMIK & KEPENDUDUKAN
-      ========================================================= */}
+      {/* MAIN CONTENT GRID: DATA AKADEMIK & KEPENDUDUKAN */}
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
         {/* LEFT COLUMN: IDENTITAS RESMI SEKOLAH */}
         <div className="space-y-6">
@@ -242,9 +200,7 @@ export default function ProfilePage() {
                       {item.copyable && (
                         <button
                           type="button"
-                          onClick={() =>
-                            copyToClipboard(item.value, item.label)
-                          }
+                          onClick={() => copyToClipboard(item.value, item.label)}
                           className="grid h-7 w-7 place-items-center rounded-full bg-[#e9eef3] text-[#17345b] shadow-[2px_2px_5px_#cbd3db,-2px_-2px_5px_#fff] transition hover:scale-105 active:scale-95"
                           title="Salin ke clipboard"
                         >
@@ -308,7 +264,7 @@ export default function ProfilePage() {
                   KARTU PELAJAR DIGITAL
                 </span>
                 <h4 className="text-sm font-extrabold tracking-tight">
-                  SMA LENTERA NUSANTARA
+                  SIAKAD KURIKULUM MERDEKA
                 </h4>
               </div>
               <School size={20} className="text-[#93b3d8]" />
@@ -317,13 +273,13 @@ export default function ProfilePage() {
             <div className="my-6 flex items-center justify-between">
               <div>
                 <strong className="block text-lg font-bold">
-                  {student.name}
+                  {auth.user.name}
                 </strong>
                 <p className="text-xs font-mono text-[#cbd9ea]">
-                  NISN. {student.nisn}
+                  NISN. {student?.nisn ?? "-"}
                 </p>
                 <span className="mt-1 inline-block rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-semibold">
-                  {student.className}
+                  {student?.school_class?.name ?? "Siswa Aktif"}
                 </span>
               </div>
               <span className="grid h-14 w-14 place-items-center rounded-2xl bg-white p-1 text-[#17345b] shadow-md">
@@ -332,9 +288,9 @@ export default function ProfilePage() {
             </div>
 
             <div className="flex items-center justify-between border-t border-white/15 pt-3 text-[10px] text-[#cbd9ea]">
-              <span>Masa Berlaku: 2024/2025</span>
+              <span>Status: Terverifikasi</span>
               <span className="font-semibold text-emerald-400">
-                ● RFID SMART PASS AKTIF
+                ● SMART PASS AKTIF
               </span>
             </div>
           </div>
@@ -363,29 +319,6 @@ export default function ProfilePage() {
                   <small className="text-[10px] text-[#78888f]">{g.sub}</small>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* SECURITY & QUICK ACTION BUTTONS */}
-          <div className="rounded-[32px] bg-[#e9eef3] p-6 shadow-[8px_8px_18px_#cbd3db,-8px_-8px_18px_#fff]">
-            <h3 className="text-base font-bold text-[#17345b]">
-              Keamanan & Berkas
-            </h3>
-
-            <div className="mt-4 flex flex-col gap-2.5">
-              <button
-                type="button"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#17345b] px-5 py-3 text-xs font-bold text-white shadow-[4px_4px_9px_#cbd3db,-4px_-4px_9px_#fff] transition hover:bg-[#102743] hover:-translate-y-0.5 active:translate-y-0"
-              >
-                <Download size={14} /> Unduh Surat Keterangan Aktif (PDF)
-              </button>
-
-              <button
-                type="button"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#e9eef3] px-5 py-3 text-xs font-bold text-[#17345b] shadow-[4px_4px_9px_#cbd3db,-4px_-4px_9px_#fff] transition hover:-translate-y-0.5 active:translate-y-0"
-              >
-                <KeyRound size={14} /> Ganti Kata Sandi Portal
-              </button>
             </div>
           </div>
         </div>
