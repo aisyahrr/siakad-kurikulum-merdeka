@@ -1,5 +1,6 @@
 import { Link, usePage, router } from "@inertiajs/react";
 import { GraduationCap, Settings, LogOut, X, House } from "lucide-react";
+import { toast } from "sonner";
 
 import { roleIcons, roleNavigation } from "@/constants/roleNavigation";
 import type { SharedData } from "@/types";
@@ -11,8 +12,13 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
     const { auth } = usePage<SharedData>().props;
-    const role = auth.user.role;
+    const user = auth?.user;
+    const role = user?.role;
     const { url } = usePage();
+
+    if (!user) {
+        return null;
+    }
 
     // Ambil navigasi berdasarkan role
     const navigation = roleNavigation[role] ?? [];
@@ -29,13 +35,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     const handleSignOut = () => {
         router.post("/logout");
     };
-    console.log("Current URL:", url);
-    console.log("Role:", role);
-    console.log("Navigation:", navigation);
     return (
         <>
             <aside
-                className={`fixed left-0 top-0 z-50 flex h-screen w-50 flex-col rounded-tr-[10px] rounded-br-[10px] bg-[#011024] py-7 pl-6 pr-0 transition-transform duration-300 max-md:-translate-x-full ${
+                className={`fixed left-0 top-0 z-50 flex h-[100dvh] w-[min(82vw,200px)] flex-col rounded-tr-[10px] rounded-br-[10px] bg-[#011024] py-7 pl-6 pr-0 transition-transform duration-300 max-md:-translate-x-full ${
                     isOpen ? "max-md:translate-x-0" : ""
                 }`}
             >
@@ -106,7 +109,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         type="button"
                         title="Keluar"
                         className="group flex cursor-pointer items-center gap-3.5 py-2.5 pl-4 pr-3 text-xs font-bold text-white transition-colors hover:text-[#d9534f]"
-                        onClick={handleSignOut}
+                        onClick={() => {
+                            toast.info("Keluar dari aplikasi SIAKAD?", {
+                                action: {
+                                    label: "Ya, Logout",
+                                    onClick: () => router.post("/logout"),
+                                },
+                            });
+                        }}
                     >
                         <LogOut
                             size={18}

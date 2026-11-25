@@ -126,7 +126,7 @@ export default function Welcome() {
 
                 {/* HERO SECTION */}
                 <section className="relative flex min-h-[700px] items-center overflow-hidden bg-[#E4EBF5] lg:min-h-[780px]">
-                    <div className="relative z-10 mx-auto w-full max-w-[1440px] px-6 pb-16 pt-44 lg:px-16">
+                    <div className="relative z-10 mx-auto w-full max-w-[1440px] px-6 pb-16 pt-30 md:pt-44 lg:px-16">
                         <div className="grid lg:grid-cols-12 gap-12 items-center">
                             <div className="lg:col-span-7">
                                 <div className="mb-6 inline-flex items-center gap-3 rounded-full bg-[#E4EBF5] px-4 py-2 shadow-[inset_3px_3px_6px_#cbced1,inset_-3px_-3px_6px_#ffffff]">
@@ -176,7 +176,7 @@ export default function Welcome() {
                                         <img
                                             src="https://images.unsplash.com/photo-1562774053-701939374585?w=1000&q=90"
                                             alt="Campus Hero"
-                                            className="h-[380px] w-full object-cover"
+                                            className="sm:h-[300px] md:h-[380px] w-full object-cover"
                                         />
                                     </div>
                                     <div className="absolute -bottom-6 -left-6 rounded-2xl bg-[#E4EBF5] p-5 shadow-[10px_10px_20px_#cbced1,-10px_-10px_20px_#ffffff] border border-white/50">
@@ -222,7 +222,7 @@ export default function Welcome() {
                                 <img
                                     src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1000&q=85"
                                     alt="Students learning together"
-                                    className="h-[420px] w-full object-cover"
+                                    className="h-[300px] sm:h-[380px] w-full object-cover"
                                 />
                             </div>
                         </div>

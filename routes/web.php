@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\SchoolClassController;
@@ -13,14 +14,25 @@ use App\Http\Controllers\MeetingController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\BimbinganController;
 use App\Http\Controllers\ReportCardController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\DashboardPortalController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AcademicDataController;
+use App\Http\Controllers\AdminSettingsController;
+use App\Http\Controllers\AdminImportController;
 
 Route::inertia('/', 'welcome')->name('home');
+Route::get('/login', fn () => \Inertia\Inertia::render('auth/LoginPage'))->name('login');
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])
     ->name('login.store');
+
+Route::get('/forgot-password', [PasswordResetController::class, 'create'])->name('password.request');
+Route::post('/forgot-password/send-otp', [PasswordResetController::class, 'sendOtp'])->name('password.otp.send');
+Route::post('/forgot-password/verify-otp', [PasswordResetController::class, 'verifyOtp'])->name('password.otp.verify');
+Route::post('/forgot-password/reset', [PasswordResetController::class, 'resetPassword'])->name('password.update');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
@@ -36,17 +48,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Admin
     Route::middleware(['role:admin'])->group(function () {
-        Route::inertia('/admin', 'admin/DashboardAdminPage')->name('admin.dashboard');
-        
+        Route::get('/admin', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
         // Manajemen Pengguna
         Route::get('/admin/pengguna', [UserController::class, 'index'])->name('admin.pengguna');
         Route::post('/admin/pengguna', [UserController::class, 'store'])->name('admin.pengguna.store');
         Route::put('/admin/pengguna/{user}', [UserController::class, 'update'])->name('admin.pengguna.update');
+        Route::patch('/admin/pengguna/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('admin.pengguna.toggle-status');
         Route::put('/admin/pengguna/{user}/reset-password', [UserController::class, 'resetPassword'])->name('admin.pengguna.reset-password');
         Route::delete('/admin/pengguna/{user}', [UserController::class, 'destroy'])->name('admin.pengguna.destroy');
 
         // Data Akademik
-        Route::get('/admin/data-akademik', [AcademicYearController::class, 'index'])->name('admin.data-akademik');
+        Route::get('/admin/data-akademik', [AcademicDataController::class, 'index'])->name('admin.data-akademik');
+        Route::post('/admin/data-akademik/siswa', [AcademicDataController::class, 'storeStudent'])->name('admin.data-akademik.siswa.store');
+        Route::post('/admin/data-akademik/guru/{teacher}/wali-kelas', [AcademicDataController::class, 'assignHomeroom'])->name('admin.data-akademik.wali-kelas');
         Route::post('/admin/data-akademik', [AcademicYearController::class, 'store'])->name('admin.data-akademik.store');
         Route::put('/admin/data-akademik/{academicYear}', [AcademicYearController::class, 'update'])->name('admin.data-akademik.update');
         Route::delete('/admin/data-akademik/{academicYear}', [AcademicYearController::class, 'destroy'])->name('admin.data-akademik.destroy');
@@ -70,8 +85,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Presensi Guru
         Route::get('/admin/presensi-guru', [ExtraFeatureController::class, 'teacherAttendance'])->name('admin.presensi-guru');
 
-        Route::inertia('/admin/import', 'admin/ImportDataPage')->name('admin.import');
-        Route::inertia('/admin/pengaturan', 'admin/PengaturanAdminPage')->name('admin.pengaturan');
+        Route::post('/admin/import', [AdminImportController::class, 'store'])->name('admin.import.store');
+        Route::get('/admin/import', fn () => \Inertia\Inertia::render('admin/ImportDataPage'))->name('admin.import');
+
+        Route::get('/admin/pengaturan', [AdminSettingsController::class, 'edit'])->name('admin.pengaturan');
+        Route::put('/admin/pengaturan', [AdminSettingsController::class, 'update'])->name('admin.pengaturan.update');
     });
 
     // Guru
@@ -98,6 +116,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/guru/pertemuan', [MeetingController::class, 'store'])->name('guru.pertemuan.store');
         Route::put('/guru/pertemuan/{meeting}', [MeetingController::class, 'update'])->name('guru.pertemuan.update');
         Route::delete('/guru/pertemuan/{meeting}', [MeetingController::class, 'destroy'])->name('guru.pertemuan.destroy');
+
+        // Materi Pembelajaran Guru
+        Route::get('/guru/materi', [MaterialController::class, 'index'])->name('guru.materi');
+        Route::post('/guru/materi', [MaterialController::class, 'store'])->name('guru.materi.store');
+        Route::put('/guru/materi/{material}', [MaterialController::class, 'update'])->name('guru.materi.update');
+        Route::delete('/guru/materi/{material}', [MaterialController::class, 'destroy'])->name('guru.materi.destroy');
 
         // Kuis Online Guru
         Route::get('/guru/kuis', [QuizController::class, 'index'])->name('guru.kuis');
@@ -134,11 +158,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/siswa/library', [ExtraFeatureController::class, 'library'])->name('siswa.library');
         Route::get('/siswa/schedule', [ScheduleController::class, 'studentSchedule'])->name('siswa.schedule');
         Route::get('/siswa/rapor', [ReportCardController::class, 'studentReport'])->name('siswa.rapor');
-        Route::inertia('/siswa/profil', 'siswa/ProfilPage')->name('siswa.profil');
+        Route::get('/siswa/profil', [DashboardPortalController::class, 'studentDashboard'])->name('siswa.profil');
         Route::get('/siswa/presensi', [AttendanceController::class, 'studentAttendance'])->name('siswa.presensi');
         Route::get('/siswa/pengumuman', [AnnouncementController::class, 'siswaIndex'])->name('siswa.pengumuman');
         Route::get('/siswa/nilai', [GradeController::class, 'studentGrades'])->name('siswa.nilai');
-        Route::inertia('/siswa/materi', 'siswa/MateriPage')->name('siswa.materi');
+        Route::get('/siswa/materi', [MaterialController::class, 'studentIndex'])->name('siswa.materi');
+
+        // Kuis Online Siswa
+        Route::get('/siswa/kuis', [QuizController::class, 'studentIndex'])->name('siswa.kuis');
+        Route::post('/siswa/kuis/{quiz}/submit', [QuizController::class, 'submit'])->name('siswa.kuis.submit');
     });
 
     // Orang Tua

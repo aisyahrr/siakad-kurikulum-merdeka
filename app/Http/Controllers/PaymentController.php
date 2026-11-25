@@ -11,19 +11,31 @@ class PaymentController extends Controller
 {
     public function index(Request $request)
     {
-        $payments = Payment::with('student.user')->latest()->paginate(10);
-        $students = Student::with('user')->get();
+        $user = $request->user();
 
-        $user = auth()->user();
         if ($user->role === 'admin') {
+            $query = Payment::with('student.user')->latest();
+
+            if ($request->filled('status') && $request->status !== 'Semua') {
+                $query->where('status', $request->status);
+            }
+
             return Inertia::render('admin/KeuanganAdminPage', [
-                'payments' => $payments,
-                'students' => $students
+                'payments' => $query->paginate(10)->withQueryString(),
+                'students' => Student::with('user')->get(),
+                'filters' => $request->only(['status']),
             ]);
         }
 
+        $childIds = Student::where('parent_user_id', $user->id)->pluck('id');
+
+        $payments = Payment::with('student.user')
+            ->whereIn('student_id', $childIds)
+            ->orderByDesc('due_date')
+            ->paginate(10);
+
         return Inertia::render('orangtua/KeuanganAnakPage', [
-            'payments' => $payments
+            'payments' => $payments,
         ]);
     }
 

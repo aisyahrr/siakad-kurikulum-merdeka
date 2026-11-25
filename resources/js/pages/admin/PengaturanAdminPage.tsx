@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { router, usePage } from "@inertiajs/react";
 import {
   School,
   Calendar,
@@ -9,40 +10,102 @@ import {
   Database,
 } from "lucide-react";
 
-export default function PengaturanAdminPage() {
-  const [academicYear, setAcademicYear] = useState("2024/2025");
-  const [semester, setSemester] = useState<"Ganjil" | "Genap">("Ganjil");
-  const [isGradeEntryLocked, setIsGradeEntryLocked] = useState(false);
-  const [globalKKTP, setGlobalKKTP] = useState(70);
-  const [minAttendanceWarning, setMinAttendanceWarning] = useState(75);
+interface SchoolProfile {
+  [key: string]: string;
+  name: string;
+  npsn: string;
+  akreditasi: string;
+  headmaster: string;
+  nipHeadmaster: string;
+  address: string;
+  website: string;
+  phone: string;
+}
+
+interface PengaturanAdminProps {
+  academicYear?: string;
+  semester?: "Ganjil" | "Genap";
+  globalKktp?: number;
+  minAttendanceWarning?: number;
+  isGradeEntryLocked?: boolean;
+  schoolProfile?: Partial<SchoolProfile>;
+}
+
+export default function PengaturanAdminPage({
+  academicYear: initialAcademicYear = "",
+  semester: initialSemester = "Ganjil",
+  globalKktp: initialKktp = 70,
+  minAttendanceWarning: initialAttendance = 75,
+  isGradeEntryLocked: initialLocked = false,
+  schoolProfile: initialProfile = {},
+}: PengaturanAdminProps = {}) {
+  const page = usePage<{ flash?: { success?: string; error?: string } }>();
+  const flash = page.props.flash;
+
+  const [academicYear, setAcademicYear] = useState(initialAcademicYear);
+  const [semester, setSemester] = useState<"Ganjil" | "Genap">(initialSemester);
+  const [isGradeEntryLocked, setIsGradeEntryLocked] = useState(initialLocked);
+  const [globalKKTP, setGlobalKKTP] = useState(initialKktp);
+  const [minAttendanceWarning, setMinAttendanceWarning] = useState(initialAttendance);
   const [feedback, setFeedback] = useState("");
-  const [isBackingUp, setIsBackingUp] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Profil Sekolah
-  const [schoolProfile, setSchoolProfile] = useState({
-    name: "SMA NEGERI UNGGULAN INDONESIA",
-    npsn: "20104592",
-    akreditasi: "A (Unggul)",
-    headmaster: "Dr. H. Ahmad Sudrajat, M.Pd",
-    nipHeadmaster: "197204151998021003",
-    address: "Jl. Margonda Raya No. 100, Kota Depok, Jawa Barat",
-    website: "https://sman-siakad.sch.id",
-    phone: "(021) 77203941",
+  const [schoolProfile, setSchoolProfile] = useState<SchoolProfile>({
+    name: "",
+    npsn: "",
+    akreditasi: "",
+    headmaster: "",
+    nipHeadmaster: "",
+    address: "",
+    website: "",
+    phone: "",
+    ...initialProfile,
   });
+
+  useEffect(() => {
+    if (flash?.success) {
+      setFeedback(flash.success);
+      const timer = setTimeout(() => setFeedback(""), 4000);
+      return () => clearTimeout(timer);
+    }
+    if (flash?.error) {
+      setFeedback(flash.error);
+      const timer = setTimeout(() => setFeedback(""), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [flash?.success, flash?.error]);
 
   const handleSaveSettings = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setFeedback("Konfigurasi sistem akademik dan profil sekolah berhasil disimpan.");
-    setTimeout(() => setFeedback(""), 4000);
+
+    router.put(
+      "/admin/pengaturan",
+      {
+        academicYear,
+        semester,
+        globalKktp: globalKKTP,
+        minAttendanceWarning,
+        isGradeEntryLocked,
+        schoolProfile,
+      },
+      {
+        preserveScroll: true,
+        onStart: () => setIsSaving(true),
+        onFinish: () => setIsSaving(false),
+      },
+    );
   };
 
   const handleBackupDatabase = () => {
-    setIsBackingUp(true);
-    setTimeout(() => {
-      setIsBackingUp(false);
-      setFeedback("Cadangan basis data (SIAKAD_DB_SNAPSHOT.sql.gz) berhasil dibuat dan disimpan.");
-      setTimeout(() => setFeedback(""), 4000);
-    }, 1200);
+    setIsSaving(true);
+    router.reload({
+      onFinish: () => {
+        setIsSaving(false);
+        setFeedback("Konfigurasi sistem berhasil dimuat ulang.");
+        setTimeout(() => setFeedback(""), 4000);
+      },
+    });
   };
 
   return (
@@ -64,11 +127,11 @@ export default function PengaturanAdminPage() {
         <button
           type="button"
           onClick={handleBackupDatabase}
-          disabled={isBackingUp}
+          disabled={isSaving}
           className="inline-flex items-center gap-1.5 self-start rounded-full bg-[#e9eef3] px-4 py-2 text-xs font-bold text-[#17345b] shadow-[3px_3px_7px_#cbd3db,-3px_-3px_7px_#fff] transition hover:text-[#102743] sm:self-auto disabled:opacity-50"
         >
-          <Database size={14} className={isBackingUp ? "animate-spin" : ""} />
-          {isBackingUp ? "Membuat Snapshot..." : "Cadangkan Database"}
+          <Database size={14} className={isSaving ? "animate-spin" : ""} />
+          {isSaving ? "Memuat Ulang..." : "Muat Ulang Konfigurasi"}
         </button>
       </div>
 
@@ -330,10 +393,10 @@ export default function PengaturanAdminPage() {
         <div className="flex justify-end pt-2">
           <button
             type="submit"
-            className="inline-flex items-center gap-1.5 rounded-full bg-[#17345b] px-6 py-2.5 text-xs font-bold text-white shadow-[3px_3px_7px_#cbd3db] transition hover:bg-[#102743]"
-          >
+            disabled={isSaving}
+            className="inline-flex items-center gap-1.5 rounded-full bg-[#17345b] px-6 py-2.5 text-xs font-bold text-white shadow-[3px_3px_7px_#cbd3db] transition hover:bg-[#102743] disabled:opacity-50">
             <Save size={14} />
-            Simpan Seluruh Pengaturan
+            {isSaving ? "Menyimpan..." : "Simpan Seluruh Pengaturan"}
           </button>
         </div>
       </form>

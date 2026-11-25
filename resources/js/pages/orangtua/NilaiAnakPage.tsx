@@ -96,7 +96,7 @@ export default function NilaiAnakPage() {
         </div>
 
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full min-w-[640px] text-left">
             <thead>
               <tr className="border-b border-[#d8e1e8] text-[10px] font-extrabold uppercase tracking-wider text-[#68777c]">
                 <th className="py-3 px-3">Mata Pelajaran</th>

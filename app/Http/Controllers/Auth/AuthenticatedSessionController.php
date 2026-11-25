@@ -24,6 +24,14 @@ class AuthenticatedSessionController extends Controller
             abort(429);
         }
 
+        $candidate = \App\Models\User::where('email', $credentials['email'])->first();
+
+        if ($candidate && ! $candidate->is_active) {
+            throw ValidationException::withMessages([
+                'email' => 'Akun Anda sedang dinonaktifkan. Hubungi administrator.',
+            ]);
+        }
+
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
             RateLimiter::hit($throttleKey);
             throw ValidationException::withMessages([
@@ -36,6 +44,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = Auth::user();
+        $user->forceFill(['last_login_at' => now()])->save();
 
         return match ($user->role) {
             'admin' => redirect('/admin'),

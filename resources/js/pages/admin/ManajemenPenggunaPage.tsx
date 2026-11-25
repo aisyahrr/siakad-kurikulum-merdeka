@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState } from "react";
+import { Link, router, useForm, usePage } from "@inertiajs/react";
 import {
   UserPlus,
   Search,
@@ -8,6 +9,7 @@ import {
   UserCheck,
   UserX,
   Plus,
+  Trash2,
 } from "lucide-react";
 
 type UserRole = "siswa" | "guru" | "wali-kelas" | "orang-tua" | "admin";
@@ -18,151 +20,139 @@ interface UserAccount {
   username: string;
   email: string;
   role: UserRole;
-  identifier: string; // NISN atau NIP
+  identifier: string;
   isActive: boolean;
   lastLogin: string;
 }
 
-export default function ManajemenPenggunaPage() {
-  const [users, setUsers] = useState<UserAccount[]>([
-    {
-      id: "u-1",
-      name: "Administrator Utama",
-      username: "admin.pusat",
-      email: "admin@siakad.sch.id",
-      role: "admin",
-      identifier: "NIP. 198001012000031001",
-      isActive: true,
-      lastLogin: "10 menit lalu",
-    },
-    {
-      id: "u-2",
-      name: "Drs. Hendra Setiawan, M.Pd",
-      username: "hendra.setiawan",
-      email: "hendra@siakad.sch.id",
-      role: "wali-kelas",
-      identifier: "NIP. 197805122005011004",
-      isActive: true,
-      lastLogin: "25 menit lalu",
-    },
-    {
-      id: "u-3",
-      name: "Budi Santoso, M.Pd",
-      username: "budi.santoso",
-      email: "budi@siakad.sch.id",
-      role: "guru",
-      identifier: "NIP. 198203152008011002",
-      isActive: true,
-      lastLogin: "2 jam lalu",
-    },
-    {
-      id: "u-4",
-      name: "Alya Putri",
-      username: "alya.putri",
-      email: "alya@siswa.siakad.sch.id",
-      role: "siswa",
-      identifier: "NISN. 0064928110",
-      isActive: true,
-      lastLogin: "Kemarin",
-    },
-    {
-      id: "u-5",
-      name: "Ir. Hendrawan",
-      username: "ortu.alyaputri",
-      email: "hendrawan@gmail.com",
-      role: "orang-tua",
-      identifier: "Wali dari Alya Putri",
-      isActive: true,
-      lastLogin: "3 hari lalu",
-    },
-    {
-      id: "u-6",
-      name: "Bagas Ramadhan",
-      username: "bagas.ramadhan",
-      email: "bagas@siswa.siakad.sch.id",
-      role: "siswa",
-      identifier: "NISN. 0064928111",
-      isActive: false,
-      lastLogin: "1 minggu lalu",
-    },
-  ]);
+interface PaginationLink {
+  url: string | null;
+  label: string;
+  active: boolean;
+}
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<string>("Semua");
+interface ManajemenPenggunaProps {
+  users?: {
+    data: UserAccount[];
+    links: PaginationLink[];
+    total: number;
+  };
+  filters?: { search?: string | null; role?: string | null };
+  summary?: {
+    total: number;
+    students: number;
+    teachers: number;
+    active: number;
+  };
+}
+
+export default function ManajemenPenggunaPage({
+  users,
+  filters,
+  summary,
+}: ManajemenPenggunaProps = {}) {
+  const page = usePage<{ flash?: { success?: string; error?: string } }>();
+  const flash = page.props.flash;
+
+  const rows = users?.data ?? [];
+  const stats = summary ?? {
+    total: users?.total ?? 0,
+    students: 0,
+    teachers: 0,
+    active: 0,
+  };
+
+  const [searchQuery, setSearchQuery] = useState(filters?.search ?? "");
+  const [roleFilter, setRoleFilter] = useState<string>(filters?.role ?? "Semua");
   const [modalCreate, setModalCreate] = useState(false);
-  const [selectedUserForReset, setSelectedUserForReset] = useState<UserAccount | null>(null);
-  const [passwordResetData, setPasswordResetData] = useState({ password: "", password_confirmation: "" });
+  const [selectedUserForReset, setSelectedUserForReset] =
+    useState<UserAccount | null>(null);
   const [feedback, setFeedback] = useState("");
+
+  const createForm = useForm({
+    name: "",
+    username: "",
+    email: "",
+    password: "",
+    role: "siswa" as UserRole,
+    identifier: "",
+  });
+
+  const resetForm = useForm({
+    password: "",
+    password_confirmation: "",
+  });
+
+  useEffect(() => {
+    if (flash?.success) {
+      setFeedback(flash.success);
+      const timer = setTimeout(() => setFeedback(""), 4000);
+      return () => clearTimeout(timer);
+    }
+    if (flash?.error) {
+      setFeedback(flash.error);
+      const timer = setTimeout(() => setFeedback(""), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [flash?.success, flash?.error]);
 
   const roles = ["Semua", "siswa", "guru", "wali-kelas", "orang-tua", "admin"];
 
-  // Top summary metrics
-  const summary = useMemo(() => {
-    const total = users.length;
-    const students = users.filter((u) => u.role === "siswa").length;
-    const teachers = users.filter(
-      (u) => u.role === "guru" || u.role === "wali-kelas",
-    ).length;
-    const active = users.filter((u) => u.isActive).length;
-    return { total, students, teachers, active };
-  }, [users]);
-
-  const filteredUsers = useMemo(() => {
-    return users.filter((u) => {
-      const matchSearch =
-        u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.identifier.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchRole = roleFilter === "Semua" || u.role === roleFilter;
-      return matchSearch && matchRole;
-    });
-  }, [users, searchQuery, roleFilter]);
-
-  const handleToggleStatus = (id: string) => {
-    setUsers((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, isActive: !u.isActive } : u)),
+  const applyFilters = (search: string, role: string) => {
+    router.get(
+      "/admin/pengguna",
+      {
+        search: search || undefined,
+        role: role === "Semua" ? undefined : role,
+      },
+      { preserveState: true, preserveScroll: true, replace: true },
     );
-    setFeedback("Status akses akun berhasil diperbarui.");
-    setTimeout(() => setFeedback(""), 3500);
   };
 
   const handleOpenResetModal = (user: UserAccount) => {
     setSelectedUserForReset(user);
-    setPasswordResetData({ password: "", password_confirmation: "" });
+    resetForm.reset();
+    resetForm.clearErrors();
   };
 
   const handleSubmitResetPassword = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordResetData.password !== passwordResetData.password_confirmation) {
-      alert("Konfirmasi password tidak cocok!");
-      return;
-    }
-    if (selectedUserForReset) {
-      setFeedback(`Password untuk akun ${selectedUserForReset.name} berhasil diperbarui.`);
-      setSelectedUserForReset(null);
-      setTimeout(() => setFeedback(""), 4000);
-    }
+    if (!selectedUserForReset) return;
+
+    resetForm.put(`/admin/pengguna/${selectedUserForReset.id}/reset-password`, {
+      preserveScroll: true,
+      onSuccess: () => {
+        setSelectedUserForReset(null);
+        resetForm.reset();
+      },
+    });
   };
 
   const handleCreateUser = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const newUser: UserAccount = {
-      id: `u-${Date.now()}`,
-      name: String(form.get("name")),
-      username: String(form.get("username")),
-      email: String(form.get("email")),
-      role: form.get("role") as UserRole,
-      identifier: String(form.get("identifier")),
-      isActive: true,
-      lastLogin: "Baru saja",
-    };
+    createForm.post("/admin/pengguna", {
+      preserveScroll: true,
+      onSuccess: () => {
+        setModalCreate(false);
+        createForm.reset();
+      },
+    });
+  };
 
-    setUsers((prev) => [newUser, ...prev]);
-    setModalCreate(false);
-    setFeedback(`Akun baru (${newUser.name}) berhasil didaftarkan ke sistem.`);
-    setTimeout(() => setFeedback(""), 4000);
+  const handleToggleStatus = (user: UserAccount) => {
+    router.patch(
+      `/admin/pengguna/${user.id}/toggle-status`,
+      {},
+      { preserveScroll: true },
+    );
+  };
+
+  const handleDeleteUser = (user: UserAccount) => {
+    if (!window.confirm(`Hapus akun ${user.name}? Tindakan ini tidak dapat dibatalkan.`)) {
+      return;
+    }
+
+    router.delete(`/admin/pengguna/${user.id}`, { preserveScroll: true });
   };
 
   return (
@@ -197,25 +187,25 @@ export default function ManajemenPenggunaPage() {
         {[
           {
             label: "Total Seluruh Akun",
-            value: summary.total,
+            value: stats.total,
             sub: "Terdaftar di Sistem",
             colorText: "text-[#17345b]",
           },
           {
             label: "Akun Siswa",
-            value: summary.students,
+            value: stats.students,
             sub: "Peserta Didik Aktif",
             colorText: "text-[#17345b]",
           },
           {
             label: "Guru & Wali Kelas",
-            value: summary.teachers,
+            value: stats.teachers,
             sub: "Tenaga Pengajar",
             colorText: "text-[#087b79]",
           },
           {
             label: "Akun Status Aktif",
-            value: summary.active,
+            value: stats.active,
             sub: "Dapat Mengakses Portal",
             colorText: "text-[#087b79]",
           },
@@ -227,9 +217,7 @@ export default function ManajemenPenggunaPage() {
             <span className={`block text-[11px] font-bold ${item.colorText}`}>
               {item.label}
             </span>
-            <strong
-              className={`mt-1 block text-2xl font-black ${item.colorText}`}
-            >
+            <strong className={`mt-1 block text-2xl font-black ${item.colorText}`}>
               {item.value}
             </strong>
             <span className="text-[10px] text-[#718086]">{item.sub}</span>
@@ -252,9 +240,14 @@ export default function ManajemenPenggunaPage() {
             <Search size={16} className="text-[#68777c]" />
             <input
               type="text"
-              placeholder="Cari berdasarkan nama, username, email, atau NIP/NISN..."
+              placeholder="Cari berdasarkan nama, username, email, atau NIP/NISN... (Enter)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  applyFilters(searchQuery, roleFilter);
+                }
+              }}
               className="w-full bg-transparent text-xs text-[#20272d] outline-none placeholder:text-[#88989e]"
             />
           </div>
@@ -266,7 +259,10 @@ export default function ManajemenPenggunaPage() {
             <button
               key={r}
               type="button"
-              onClick={() => setRoleFilter(r)}
+              onClick={() => {
+                setRoleFilter(r);
+                applyFilters(searchQuery, r);
+              }}
               className={`rounded-full px-3.5 py-1 text-[11px] font-bold capitalize transition ${
                 roleFilter === r
                   ? "bg-[#17345b] text-white shadow-sm"
@@ -286,7 +282,7 @@ export default function ManajemenPenggunaPage() {
       {/* TABLE CONTAINER */}
       <div className="rounded-[28px] bg-[#e9eef3] p-5 shadow-[6px_6px_14px_#cbd3db,-6px_-6px_14px_#fff] sm:p-7">
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full min-w-[820px] text-left">
             <thead>
               <tr className="border-b border-[#d8e1e8] text-[10px] font-extrabold uppercase tracking-wider text-[#68777c]">
                 <th className="py-3 px-3">Nama & Identitas</th>
@@ -298,7 +294,7 @@ export default function ManajemenPenggunaPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#dce4ea] text-xs">
-              {filteredUsers.map((u) => (
+              {rows.map((u) => (
                 <tr key={u.id} className="transition hover:bg-white/30">
                   {/* NAMA & NISN/NIP */}
                   <td className="py-3.5 px-3">
@@ -360,7 +356,7 @@ export default function ManajemenPenggunaPage() {
                   {/* AKSI TOMBOL */}
                   <td className="py-3.5 px-3 text-center">
                     <div className="flex items-center justify-center gap-2">
-                       <button
+                      <button
                         type="button"
                         onClick={() => handleOpenResetModal(u)}
                         title="Reset Password"
@@ -371,7 +367,7 @@ export default function ManajemenPenggunaPage() {
 
                       <button
                         type="button"
-                        onClick={() => handleToggleStatus(u.id)}
+                        onClick={() => handleToggleStatus(u)}
                         title={
                           u.isActive ? "Nonaktifkan Akun" : "Aktifkan Akun"
                         }
@@ -387,27 +383,95 @@ export default function ManajemenPenggunaPage() {
                           <UserCheck size={13} />
                         )}
                       </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteUser(u)}
+                        title="Hapus Akun"
+                        className="grid h-7 w-7 place-items-center rounded-full bg-[#e9eef3] text-[#c0392b] shadow-[2px_2px_4px_#cbd3db,-2px_-2px_4px_#fff] hover:bg-[#fadbd8]"
+                      >
+                        <Trash2 size={13} />
+                      </button>
                     </div>
                   </td>
                 </tr>
               ))}
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="py-6 text-center text-xs text-[#718086]">
+                    Tidak ada pengguna yang cocok dengan filter.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
+
+        {/* PAGINATION */}
+        {users && users.links.length > 3 && (
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 border-t border-[#d8e1e8] pt-4">
+            {users.links.map((link, index) =>
+              link.url ? (
+                <Link
+                  key={index}
+                  href={link.url}
+                  preserveScroll
+                  className={`rounded-full px-3 py-1 text-[11px] font-bold ${
+                    link.active
+                      ? "bg-[#17345b] text-white"
+                      : "bg-[#e9eef3] text-[#68777c] shadow-[2px_2px_5px_#cbd3db,-2px_-2px_5px_#fff]"
+                  }`}
+                  dangerouslySetInnerHTML={{ __html: link.label }}
+                />
+              ) : (
+                <span
+                  key={index}
+                  className="rounded-full bg-[#e9eef3] px-3 py-1 text-[11px] font-bold text-[#a6b3b9]"
+                  dangerouslySetInnerHTML={{ __html: link.label }}
+                />
+              ),
+            )}
+          </div>
+        )}
       </div>
 
       {/* MODAL RESET PASSWORD */}
       {selectedUserForReset && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
             <h3 className="text-base font-extrabold text-[#17345b]">Reset Password</h3>
             <p className="text-xs text-[#68777c] mb-4">Set password baru untuk {selectedUserForReset.name}</p>
             <form onSubmit={handleSubmitResetPassword} className="space-y-3">
-              <input type="password" placeholder="Password Baru" className="w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs outline-none" onChange={(e) => setPasswordResetData({...passwordResetData, password: e.target.value})} required />
-              <input type="password" placeholder="Konfirmasi Password" className="w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs outline-none" onChange={(e) => setPasswordResetData({...passwordResetData, password_confirmation: e.target.value})} required />
+              <input
+                type="password"
+                placeholder="Password Baru"
+                value={resetForm.data.password}
+                onChange={(e) => resetForm.setData("password", e.target.value)}
+                className="w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs outline-none"
+                required
+              />
+              {resetForm.errors.password && (
+                <span className="block text-[10px] font-semibold text-[#c0392b]">
+                  {resetForm.errors.password}
+                </span>
+              )}
+              <input
+                type="password"
+                placeholder="Konfirmasi Password"
+                value={resetForm.data.password_confirmation}
+                onChange={(e) => resetForm.setData("password_confirmation", e.target.value)}
+                className="w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs outline-none"
+                required
+              />
               <div className="flex justify-end gap-2 mt-4">
                 <button type="button" onClick={() => setSelectedUserForReset(null)} className="rounded-full px-4 py-2 text-xs bg-[#e9eef3] shadow">Batal</button>
-                <button type="submit" className="rounded-full px-4 py-2 text-xs bg-[#17345b] text-white shadow">Simpan</button>
+                <button
+                  type="submit"
+                  disabled={resetForm.processing}
+                  className="rounded-full px-4 py-2 text-xs bg-[#17345b] text-white shadow disabled:opacity-50"
+                >
+                  Simpan
+                </button>
               </div>
             </form>
           </div>
@@ -417,7 +481,7 @@ export default function ManajemenPenggunaPage() {
       {/* MODAL TAMBAH PENGGUNA */}
       {modalCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-[#d8e1e8] pb-3">
               <div>
                 <span className="text-[10px] font-bold uppercase text-[#68777c]">
@@ -442,24 +506,31 @@ export default function ManajemenPenggunaPage() {
                   Nama Lengkap
                 </label>
                 <input
-                  name="name"
+                  value={createForm.data.name}
+                  onChange={(e) => createForm.setData("name", e.target.value)}
                   placeholder="Contoh: Rian Anggara, S.Kom"
                   className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs font-bold text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
                   required
                 />
+                {createForm.errors.name && (
+                  <span className="text-[10px] font-semibold text-[#c0392b]">{createForm.errors.name}</span>
+                )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="block text-xs font-bold text-[#17345b]">
                     Username
                   </label>
                   <input
-                    name="username"
+                    value={createForm.data.username}
+                    onChange={(e) => createForm.setData("username", e.target.value)}
                     placeholder="rian.anggara"
                     className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs font-bold text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
-                    required
                   />
+                  {createForm.errors.username && (
+                    <span className="text-[10px] font-semibold text-[#c0392b]">{createForm.errors.username}</span>
+                  )}
                 </div>
 
                 <div>
@@ -467,7 +538,8 @@ export default function ManajemenPenggunaPage() {
                     Peran (Role)
                   </label>
                   <select
-                    name="role"
+                    value={createForm.data.role}
+                    onChange={(e) => createForm.setData("role", e.target.value as UserRole)}
                     className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs font-bold text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
                   >
                     <option value="siswa">Siswa</option>
@@ -485,11 +557,32 @@ export default function ManajemenPenggunaPage() {
                 </label>
                 <input
                   type="email"
-                  name="email"
+                  value={createForm.data.email}
+                  onChange={(e) => createForm.setData("email", e.target.value)}
                   placeholder="rian@siakad.sch.id"
                   className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
                   required
                 />
+                {createForm.errors.email && (
+                  <span className="text-[10px] font-semibold text-[#c0392b]">{createForm.errors.email}</span>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#17345b]">
+                  Password Awal
+                </label>
+                <input
+                  type="password"
+                  value={createForm.data.password}
+                  onChange={(e) => createForm.setData("password", e.target.value)}
+                  placeholder="Minimal 8 karakter"
+                  className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
+                  required
+                />
+                {createForm.errors.password && (
+                  <span className="text-[10px] font-semibold text-[#c0392b]">{createForm.errors.password}</span>
+                )}
               </div>
 
               <div>
@@ -497,10 +590,10 @@ export default function ManajemenPenggunaPage() {
                   Nomor Identitas (NIP / NISN / Keterangan)
                 </label>
                 <input
-                  name="identifier"
+                  value={createForm.data.identifier}
+                  onChange={(e) => createForm.setData("identifier", e.target.value)}
                   placeholder="NIP. 1985... atau NISN. 0064..."
                   className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
-                  required
                 />
               </div>
 
@@ -514,7 +607,8 @@ export default function ManajemenPenggunaPage() {
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#17345b] px-5 py-2 text-xs font-bold text-white shadow transition hover:bg-[#102743]"
+                  disabled={createForm.processing}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#17345b] px-5 py-2 text-xs font-bold text-white shadow transition hover:bg-[#102743] disabled:opacity-50"
                 >
                   <Plus size={13} />
                   Simpan Pengguna

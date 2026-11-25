@@ -175,7 +175,7 @@ export default function StudentDashboardPage({
         {/* GPA & ACADEMIC PERFORMANCE */}
         <Card className="rounded-3xl bg-[#E4EBF5] p-6 shadow-[10px_10px_20px_#cbced1,-10px_-10px_20px_#ffffff] border-0">
           <div className="relative overflow-hidden">
-            <div className="flex items-start justify-between">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex items-center gap-3.5">
                 <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#E4EBF5] text-[#B18A42] shadow-[6px_6px_12px_#cbced1]">
                   <Award size={22} />
@@ -248,7 +248,7 @@ export default function StudentDashboardPage({
 
         {/* ATTENDANCE */}
         <Card className="rounded-3xl bg-[#E4EBF5] p-6 shadow-[10px_10px_20px_#cbced1,-10px_-10px_20px_#ffffff] border-0">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex items-center gap-3.5">
               <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#E4EBF5] text-[#17345B] shadow-[6px_6px_12px_#cbced1,-6px_-6px_12px_#ffffff]">
                 <CalendarDays size={20} />
@@ -264,7 +264,7 @@ export default function StudentDashboardPage({
             </span>
           </div>
 
-          <div className="mt-7 flex items-center justify-between gap-5">
+          <div className="mt-7 flex flex-col items-center justify-between gap-5 sm:flex-row">
             {/* DONUT */}
             <div
               className="relative grid h-32 w-32 shrink-0 place-items-center rounded-full shadow-[6px_6px_12px_#cbced1,-6px_-6px_12px_#ffffff]"
@@ -286,7 +286,7 @@ export default function StudentDashboardPage({
             </div>
 
             {/* DETAILS */}
-            <div className="space-y-2.5 text-xs w-full max-w-[150px]">
+            <div className="w-full space-y-2.5 text-xs sm:max-w-[150px]">
               <div className="flex items-center gap-2">
                 <span className="h-2.5 w-2.5 rounded-full bg-[#17345B]" />
                 <span className="text-[#64748B]">Hadir</span>
@@ -313,7 +313,7 @@ export default function StudentDashboardPage({
             </div>
           </div>
 
-          <div className="mt-8 flex items-center justify-between border-t border-[#cbd5e1] pt-4">
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-2 border-t border-[#cbd5e1] pt-4">
             <span className="text-xs text-[#64748B]">
               Batas Absen: Maks {attendance.maxAbsent} Sesi
             </span>
@@ -348,7 +348,7 @@ export default function StudentDashboardPage({
 
       {/* TODAY SCHEDULE */}
       <section>
-        <div className="mb-5 flex items-end justify-between">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="border-l-4 border-[#B18A42] pl-3.5">
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#B18A42]">
               Agenda Hari Ini
@@ -442,7 +442,7 @@ export default function StudentDashboardPage({
 
       {/* ANNOUNCEMENTS */}
       <section>
-        <div className="mb-5 flex items-end justify-between">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="border-l-4 border-[#B18A42] pl-3.5">
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#B18A42]">
               Informasi Terbaru

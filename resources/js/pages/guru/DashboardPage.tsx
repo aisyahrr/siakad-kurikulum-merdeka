@@ -150,7 +150,7 @@ export default function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-[1.55fr_1fr] items-start">
         {/* KOLOM KIRI: MATA PELAJARAN & PROGRESS SILABUS */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-base font-bold text-[#17345b]">
               Mata Pelajaran Diampu
             </h2>

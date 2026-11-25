@@ -93,7 +93,7 @@ export default function NilaiGuruPage() {
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={handleExportCSV}
@@ -115,7 +115,7 @@ export default function NilaiGuruPage() {
 
         {/* TABEL NILAI MASSAL */}
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full min-w-[720px] text-left">
             <thead>
               <tr className="border-b border-[#d8e1e8] text-[11px] font-extrabold uppercase tracking-wider text-[#68777c]">
                 <th className="py-3 px-3">No</th>

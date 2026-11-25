@@ -181,7 +181,7 @@ export default function PresensiAnakPage() {
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-[#d8e1e8] pb-3">
               <h3 className="text-base font-extrabold text-[#17345b]">
                 Form Pengajuan Izin Siswa

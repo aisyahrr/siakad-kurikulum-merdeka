@@ -254,7 +254,7 @@ export default function SchedulePage() {
         <div className="space-y-5">
           {/* SUMMARY */}
           <Card>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="font-bold text-[#20272d]">Ringkasan Hari Ini</h2>
               <span className="rounded-full bg-[#dcebea] px-3 py-1 text-[10px] font-semibold text-[#17345b]">
                 {daySchedules.length} Sesi Aktif
@@ -364,7 +364,7 @@ export default function SchedulePage() {
           onClick={() => setShowCalendar(false)}
         >
           <div
-            className="w-full max-w-lg rounded-3xl bg-[#edf1f4] p-6 shadow-2xl"
+            className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-3xl bg-[#edf1f4] p-6 shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between">

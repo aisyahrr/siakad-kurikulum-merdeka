@@ -1,4 +1,5 @@
 import { useState} from "react";
+import { toast } from "sonner";
 import {
   Megaphone,
   Search,
@@ -144,7 +145,7 @@ export default function PengumumanOrangTuaPage({ dbAnnouncements }: PengumumanOr
 
       {selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-xl rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
             <div className="flex items-start justify-between border-b border-[#d8e1e8] pb-3">
               <div>
                 <span className="rounded-full bg-[#dbe8f5] px-2.5 py-0.5 text-[10px] font-extrabold uppercase text-[#17345b]">
@@ -164,12 +165,12 @@ export default function PengumumanOrangTuaPage({ dbAnnouncements }: PengumumanOr
               {selectedItem.content}
             </p>
             {selectedItem.attachmentName && (
-              <div className="mt-3 flex items-center justify-between rounded-xl bg-[#e9eef3] p-3 shadow-[2px_2px_5px_#cbd3db,-2px_-2px_5px_#fff]">
-                <span className="text-xs font-bold text-[#17345b]">{selectedItem.attachmentName}</span>
+              <div className="mt-3 flex flex-col gap-2 rounded-xl bg-[#e9eef3] p-3 shadow-[2px_2px_5px_#cbd3db,-2px_-2px_5px_#fff] sm:flex-row sm:items-center sm:justify-between">
+                <span className="min-w-0 break-words text-xs font-bold text-[#17345b]">{selectedItem.attachmentName}</span>
                 <button
                   type="button"
-                  onClick={() => alert(`Mengunduh ${selectedItem.attachmentName}...`)}
-                  className="rounded-full bg-[#087b79] px-3 py-1 text-xs font-bold text-white shadow"
+                  onClick={() => toast.info(`Mengunduh ${selectedItem.attachmentName}...`)}
+                  className="self-start whitespace-nowrap rounded-full bg-[#087b79] px-3 py-1 text-xs font-bold text-white shadow sm:self-auto"
                 >
                   Unduh PDF
                 </button>

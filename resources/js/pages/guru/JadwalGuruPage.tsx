@@ -9,7 +9,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Header } from "./shared";
-import { schedules, subjects, rombels } from "@/data/academic.data";
 
 interface ScheduleItem {
   id: string;
@@ -33,9 +32,7 @@ export default function JadwalGuruPage({ dbSchedules }: JadwalGuruPageProps = {}
   const [selectedDay, setSelectedDay] = useState("Semua");
   const days = ["Semua", "Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
 
-  const teacherSchedules = (dbSchedules && dbSchedules.length > 0)
-    ? dbSchedules
-    : schedules.filter((item) => item.teacherId === "teacher-hendra");
+  const teacherSchedules = dbSchedules ?? [];
 
   const filteredItems = teacherSchedules.filter(
     (item) => selectedDay === "Semua" || item.day === selectedDay,
@@ -84,13 +81,9 @@ export default function JadwalGuruPage({ dbSchedules }: JadwalGuruPageProps = {}
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {filteredItems.map((item) => {
           const subjectName =
-            item.subjectName ??
-            subjects.find((subject) => subject.id === item.subjectId)?.name ??
-            "Mata Pelajaran";
+            item.subjectName ?? "Mata Pelajaran";
           const rombelName =
-            item.rombelName ??
-            rombels.find((rombel) => rombel.id === item.rombelId)?.name ??
-            "Kelas";
+            item.rombelName ?? "Kelas";
 
           return (
             <div

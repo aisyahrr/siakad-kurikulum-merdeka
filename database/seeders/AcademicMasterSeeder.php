@@ -28,14 +28,14 @@ class AcademicMasterSeeder extends Seeder
 
         // 2. Mata Pelajaran
         $subjects = [
-            ['code' => 'MAT-P', 'name' => 'Matematika Peminatan'],
-            ['code' => 'MAT-W', 'name' => 'Matematika Wajib'],
-            ['code' => 'FIS-L', 'name' => 'Fisika Lanjutan'],
-            ['code' => 'BIO-S', 'name' => 'Biologi Sel'],
-            ['code' => 'KIM-O', 'name' => 'Kimia Organik'],
-            ['code' => 'BIND-1', 'name' => 'Bahasa Indonesia'],
-            ['code' => 'BING-1', 'name' => 'Bahasa Inggris'],
-            ['code' => 'INF-1', 'name' => 'Informatika'],
+            ['code' => 'MAT-P', 'name' => 'Matematika Peminatan', 'category' => 'Pilihan MIPA', 'hours_per_week' => 4, 'kktp' => 70],
+            ['code' => 'MAT-W', 'name' => 'Matematika Wajib', 'category' => 'Wajib', 'hours_per_week' => 3, 'kktp' => 70],
+            ['code' => 'FIS-L', 'name' => 'Fisika Lanjutan', 'category' => 'Pilihan MIPA', 'hours_per_week' => 4, 'kktp' => 70],
+            ['code' => 'BIO-S', 'name' => 'Biologi Sel', 'category' => 'Pilihan MIPA', 'hours_per_week' => 4, 'kktp' => 70],
+            ['code' => 'KIM-O', 'name' => 'Kimia Organik', 'category' => 'Pilihan MIPA', 'hours_per_week' => 4, 'kktp' => 70],
+            ['code' => 'BIND-1', 'name' => 'Bahasa Indonesia', 'category' => 'Wajib', 'hours_per_week' => 3, 'kktp' => 70],
+            ['code' => 'BING-1', 'name' => 'Bahasa Inggris', 'category' => 'Wajib', 'hours_per_week' => 3, 'kktp' => 70],
+            ['code' => 'INF-1', 'name' => 'Informatika', 'category' => 'Muatan Lokal', 'hours_per_week' => 3, 'kktp' => 70],
         ];
 
         foreach ($subjects as $subj) {
@@ -52,6 +52,9 @@ class AcademicMasterSeeder extends Seeder
                     'nidn' => '0415078501',
                     'gender' => 'L',
                     'phone' => '081234567890',
+                    'main_subject' => 'Matematika Peminatan',
+                    'teaching_hours' => 24,
+                    'employment_status' => 'PNS',
                 ]
             );
         }
@@ -66,6 +69,9 @@ class AcademicMasterSeeder extends Seeder
                     'nidn' => '0420038202',
                     'gender' => 'P',
                     'phone' => '081298765432',
+                    'main_subject' => 'Fisika Lanjutan',
+                    'teaching_hours' => 24,
+                    'employment_status' => 'PNS',
                 ]
             );
         }
@@ -76,6 +82,8 @@ class AcademicMasterSeeder extends Seeder
             [
                 'grade_level' => 'XII',
                 'wali_kelas_id' => $waliTeacher?->id,
+                'peminatan' => 'Matematika & Sains',
+                'capacity' => 36,
             ]
         );
 
@@ -84,6 +92,8 @@ class AcademicMasterSeeder extends Seeder
             [
                 'grade_level' => 'XI',
                 'wali_kelas_id' => null,
+                'peminatan' => 'Matematika & Sains',
+                'capacity' => 36,
             ]
         );
 
@@ -92,6 +102,8 @@ class AcademicMasterSeeder extends Seeder
             [
                 'grade_level' => 'X',
                 'wali_kelas_id' => null,
+                'peminatan' => 'Umum Terintegrasi',
+                'capacity' => 36,
             ]
         );
 
@@ -111,6 +123,8 @@ class AcademicMasterSeeder extends Seeder
                     'birth_date' => '2007-05-14',
                     'phone' => '082111223344',
                     'address' => 'Jl. Merdeka No. 45, Jakarta',
+                    'entry_year' => '2024',
+                    'status' => 'Aktif',
                 ]
             );
 
@@ -418,6 +432,21 @@ class AcademicMasterSeeder extends Seeder
                         ]
                     );
                 }
+            }
+        }
+
+        // 9. Presensi Guru (data demo 5 hari terakhir)
+        $teachers = Teacher::all();
+        $statuses = ['Hadir', 'Hadir', 'Hadir', 'Izin', 'Sakit'];
+
+        foreach ($teachers as $teacher) {
+            foreach (range(4, 0) as $daysAgo) {
+                $date = now()->subDays($daysAgo)->toDateString();
+
+                \App\Models\TeacherAttendance::firstOrCreate(
+                    ['teacher_id' => $teacher->id, 'date' => $date],
+                    ['status' => $statuses[array_rand($statuses)]]
+                );
             }
         }
     }

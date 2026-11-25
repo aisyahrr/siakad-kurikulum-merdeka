@@ -25,7 +25,7 @@ export function AuthLayout({ children }: { children?: ReactNode }) {
 
         {/* KONTEN SAJA YANG SCROLL */}
         <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-          <div className="mx-auto w-full px-5 pb-16 pt-2 md:px-8 xl:px-12">
+          <div className="mx-auto w-full max-w-[1600px] px-4 pb-16 pt-2 sm:px-5 md:px-8 xl:px-12">
             {children}
           </div>
         </main>

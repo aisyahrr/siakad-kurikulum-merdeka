@@ -1,18 +1,20 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useForm, usePage } from "@inertiajs/react";
 import { Search, Plus, CheckCircle2, X } from "lucide-react";
 
 interface RombelData {
-  id: string;
+  id: string | number;
   name: string;
-  fase: string; // Fase E (Kelas 10), Fase F (Kelas 11 & 12)
+  fase: string;
   peminatan: string;
   capacity: number;
   totalStudents: number;
   homeroomTeacher: string;
+  wali_kelas_id?: number | null;
 }
 
 interface SubjectData {
-  id: string;
+  id: string | number;
   code: string;
   name: string;
   category: "Wajib" | "Pilihan MIPA" | "Pilihan IPS" | "Muatan Lokal";
@@ -21,7 +23,25 @@ interface SubjectData {
   teacherCount: number;
 }
 
-export default function MasterDataPage() {
+interface TeacherOption {
+  id: number;
+  name: string;
+}
+
+interface MasterDataProps {
+  classes?: RombelData[];
+  subjects?: SubjectData[];
+  teachers?: TeacherOption[];
+}
+
+export default function MasterDataPage({
+  classes = [],
+  subjects = [],
+  teachers = [],
+}: MasterDataProps = {}) {
+  const page = usePage<{ flash?: { success?: string; error?: string } }>();
+  const flash = page.props.flash;
+
   const [activeTab, setActiveTab] = useState<"rombel" | "mapel">("rombel");
   const [searchQuery, setSearchQuery] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -29,103 +49,36 @@ export default function MasterDataPage() {
   const [modalRombel, setModalRombel] = useState(false);
   const [modalSubject, setModalSubject] = useState(false);
 
-  // Master Data Rombel
-  const [rombels, setRombels] = useState<RombelData[]>([
-    {
-      id: "r-1",
-      name: "XII MIPA 1",
-      fase: "Fase F (Kelas 12)",
-      peminatan: "Matematika & Sains",
-      capacity: 36,
-      totalStudents: 36,
-      homeroomTeacher: "Drs. Hendra Setiawan, M.Pd",
-    },
-    {
-      id: "r-2",
-      name: "XII MIPA 2",
-      fase: "Fase F (Kelas 12)",
-      peminatan: "Matematika & Sains",
-      capacity: 36,
-      totalStudents: 35,
-      homeroomTeacher: "Dewi Lestari, S.Si",
-    },
-    {
-      id: "r-3",
-      name: "XI MIPA 2",
-      fase: "Fase F (Kelas 11)",
-      peminatan: "Matematika & Sains",
-      capacity: 36,
-      totalStudents: 36,
-      homeroomTeacher: "Budi Santoso, M.Pd",
-    },
-    {
-      id: "r-4",
-      name: "XI IPS 1",
-      fase: "Fase F (Kelas 11)",
-      peminatan: "Sosial & Humaniora",
-      capacity: 36,
-      totalStudents: 34,
-      homeroomTeacher: "Siti Rahma, M.Pd",
-    },
-    {
-      id: "r-5",
-      name: "X-1",
-      fase: "Fase E (Kelas 10)",
-      peminatan: "Umum Terintegrasi",
-      capacity: 36,
-      totalStudents: 36,
-      homeroomTeacher: "Rudi Hartono, M.T",
-    },
-  ]);
+  const classForm = useForm({
+    name: "",
+    grade_level: "X",
+    peminatan: "Matematika & Sains",
+    capacity: "36",
+    wali_kelas_id: "",
+  });
 
-  // Master Data Mata Pelajaran
-  const [subjects, setSubjects] = useState<SubjectData[]>([
-    {
-      id: "sb-1",
-      code: "MIPA-01",
-      name: "Matematika Peminatan",
-      category: "Pilihan MIPA",
-      hoursPerWeek: 4,
-      kktp: 70,
-      teacherCount: 3,
-    },
-    {
-      id: "sb-2",
-      code: "MIPA-02",
-      name: "Fisika Lanjutan",
-      category: "Pilihan MIPA",
-      hoursPerWeek: 4,
-      kktp: 70,
-      teacherCount: 2,
-    },
-    {
-      id: "sb-3",
-      code: "MIPA-03",
-      name: "Kimia Terapan",
-      category: "Pilihan MIPA",
-      hoursPerWeek: 4,
-      kktp: 70,
-      teacherCount: 2,
-    },
-    {
-      id: "sb-4",
-      code: "UMUM-01",
-      name: "Bahasa Indonesia",
-      category: "Wajib",
-      hoursPerWeek: 3,
-      kktp: 70,
-      teacherCount: 4,
-    },
-    {
-      id: "sb-5",
-      code: "UMUM-02",
-      name: "Bahasa Inggris Lanjutan",
-      category: "Wajib",
-      hoursPerWeek: 3,
-      kktp: 70,
-      teacherCount: 3,
-    },
-  ]);
+  const subjectForm = useForm({
+    code: "",
+    name: "",
+    category: "Wajib",
+    hours_per_week: "4",
+    kktp: "70",
+  });
+
+  useEffect(() => {
+    if (flash?.success) {
+      setFeedback(flash.success);
+      const timer = setTimeout(() => setFeedback(""), 4000);
+      return () => clearTimeout(timer);
+    }
+    if (flash?.error) {
+      setFeedback(flash.error);
+      const timer = setTimeout(() => setFeedback(""), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [flash?.success, flash?.error]);
+
+  const rombels = classes;
 
   // Top summary metrics
   const summary = useMemo(() => {
@@ -162,42 +115,26 @@ export default function MasterDataPage() {
 
   const handleCreateRombel = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const newRombel: RombelData = {
-      id: `r-${Date.now()}`,
-      name: String(form.get("name")),
-      fase: String(form.get("fase")),
-      peminatan: String(form.get("peminatan")),
-      capacity: Number(form.get("capacity")) || 36,
-      totalStudents: 0,
-      homeroomTeacher: String(form.get("homeroomTeacher")),
-    };
 
-    setRombels((prev) => [newRombel, ...prev]);
-    setModalRombel(false);
-    setFeedback(`Rombongan belajar "${newRombel.name}" berhasil dibuat.`);
-    setTimeout(() => setFeedback(""), 4000);
+    classForm.post("/admin/master-data/kelas", {
+      preserveScroll: true,
+      onSuccess: () => {
+        setModalRombel(false);
+        classForm.reset();
+      },
+    });
   };
 
   const handleCreateSubject = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const newSubject: SubjectData = {
-      id: `sb-${Date.now()}`,
-      code: String(form.get("code")),
-      name: String(form.get("name")),
-      category: form.get("category") as SubjectData["category"],
-      hoursPerWeek: Number(form.get("hoursPerWeek")) || 3,
-      kktp: Number(form.get("kktp")) || 70,
-      teacherCount: 1,
-    };
 
-    setSubjects((prev) => [newSubject, ...prev]);
-    setModalSubject(false);
-    setFeedback(
-      `Mata pelajaran "${newSubject.name}" (${newSubject.code}) berhasil ditambahkan.`,
-    );
-    setTimeout(() => setFeedback(""), 4000);
+    subjectForm.post("/admin/master-data/mapel", {
+      preserveScroll: true,
+      onSuccess: () => {
+        setModalSubject(false);
+        subjectForm.reset();
+      },
+    });
   };
 
   return (
@@ -335,7 +272,7 @@ export default function MasterDataPage() {
         <div className="overflow-x-auto">
           {activeTab === "rombel" ? (
             /* ================= TABEL MASTER ROMBEL ================= */
-            <table className="w-full text-left">
+            <table className="w-full min-w-[760px] text-left">
               <thead>
                 <tr className="border-b border-[#d8e1e8] text-[10px] font-extrabold uppercase tracking-wider text-[#68777c]">
                   <th className="py-3 px-3">Nama Rombel</th>
@@ -377,7 +314,7 @@ export default function MasterDataPage() {
             </table>
           ) : (
             /* ================= TABEL MASTER MATA PELAJARAN ================= */
-            <table className="w-full text-left">
+            <table className="w-full min-w-[820px] text-left">
               <thead>
                 <tr className="border-b border-[#d8e1e8] text-[10px] font-extrabold uppercase tracking-wider text-[#68777c]">
                   <th className="py-3 px-3">Kode Mapel</th>
@@ -430,7 +367,7 @@ export default function MasterDataPage() {
       {/* MODAL BUAT ROMBEL BARU */}
       {modalRombel && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-[#d8e1e8] pb-3">
               <div>
                 <span className="text-[10px] font-bold uppercase text-[#68777c]">
@@ -456,24 +393,31 @@ export default function MasterDataPage() {
                 </label>
                 <input
                   name="name"
+                  value={classForm.data.name}
+                  onChange={(e) => classForm.setData("name", e.target.value)}
                   placeholder="Contoh: XII MIPA 3 atau X-2"
                   className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs font-bold text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
                   required
                 />
+                {classForm.errors.name && (
+                  <span className="text-[10px] font-semibold text-[#c0392b]">{classForm.errors.name}</span>
+                )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="block text-xs font-bold text-[#17345b]">
                     Fase Kurikulum
                   </label>
                   <select
-                    name="fase"
+                    name="grade_level"
+                    value={classForm.data.grade_level}
+                    onChange={(e) => classForm.setData("grade_level", e.target.value)}
                     className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs font-bold text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
                   >
-                    <option value="Fase F (Kelas 12)">Fase F (Kelas 12)</option>
-                    <option value="Fase F (Kelas 11)">Fase F (Kelas 11)</option>
-                    <option value="Fase E (Kelas 10)">Fase E (Kelas 10)</option>
+                    <option value="XII">Fase F (Kelas 12)</option>
+                    <option value="XI">Fase F (Kelas 11)</option>
+                    <option value="X">Fase E (Kelas 10)</option>
                   </select>
                 </div>
 
@@ -483,15 +427,15 @@ export default function MasterDataPage() {
                   </label>
                   <input
                     name="peminatan"
+                    value={classForm.data.peminatan}
+                    onChange={(e) => classForm.setData("peminatan", e.target.value)}
                     placeholder="Matematika & Sains"
-                    defaultValue="Matematika & Sains"
                     className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs font-bold text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
-                    required
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="block text-xs font-bold text-[#17345b]">
                     Kapasitas Siswa
@@ -499,7 +443,8 @@ export default function MasterDataPage() {
                   <input
                     type="number"
                     name="capacity"
-                    defaultValue="36"
+                    value={classForm.data.capacity}
+                    onChange={(e) => classForm.setData("capacity", e.target.value)}
                     className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs font-bold text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
                     required
                   />
@@ -509,12 +454,22 @@ export default function MasterDataPage() {
                   <label className="block text-xs font-bold text-[#17345b]">
                     Wali Kelas Penanggung Jawab
                   </label>
-                  <input
-                    name="homeroomTeacher"
-                    placeholder="Nama Wali Kelas..."
+                  <select
+                    name="wali_kelas_id"
+                    value={classForm.data.wali_kelas_id}
+                    onChange={(e) => classForm.setData("wali_kelas_id", e.target.value)}
                     className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs font-bold text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
-                    required
-                  />
+                  >
+                    <option value="">-- Belum ditentukan --</option>
+                    {teachers.map((teacher) => (
+                      <option key={teacher.id} value={teacher.id}>
+                        {teacher.name}
+                      </option>
+                    ))}
+                  </select>
+                  {classForm.errors.wali_kelas_id && (
+                    <span className="text-[10px] font-semibold text-[#c0392b]">{classForm.errors.wali_kelas_id}</span>
+                  )}
                 </div>
               </div>
 
@@ -541,7 +496,7 @@ export default function MasterDataPage() {
       {/* MODAL BUAT MATA PELAJARAN BARU */}
       {modalSubject && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-[#d8e1e8] pb-3">
               <div>
                 <span className="text-[10px] font-bold uppercase text-[#68777c]">
@@ -561,17 +516,22 @@ export default function MasterDataPage() {
             </div>
 
             <form onSubmit={handleCreateSubject} className="mt-4 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="block text-xs font-bold text-[#17345b]">
                     Kode Mapel
                   </label>
                   <input
                     name="code"
+                    value={subjectForm.data.code}
+                    onChange={(e) => subjectForm.setData("code", e.target.value)}
                     placeholder="MIPA-04"
                     className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs font-bold text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
                     required
                   />
+                  {subjectForm.errors.code && (
+                    <span className="text-[10px] font-semibold text-[#c0392b]">{subjectForm.errors.code}</span>
+                  )}
                 </div>
 
                 <div>
@@ -580,6 +540,8 @@ export default function MasterDataPage() {
                   </label>
                   <select
                     name="category"
+                    value={subjectForm.data.category}
+                    onChange={(e) => subjectForm.setData("category", e.target.value)}
                     className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs font-bold text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
                   >
                     <option value="Pilihan MIPA">Pilihan MIPA</option>
@@ -596,21 +558,27 @@ export default function MasterDataPage() {
                 </label>
                 <input
                   name="name"
+                  value={subjectForm.data.name}
+                  onChange={(e) => subjectForm.setData("name", e.target.value)}
                   placeholder="Contoh: Biologi Lanjutan"
                   className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs font-bold text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
                   required
                 />
+                {subjectForm.errors.name && (
+                  <span className="text-[10px] font-semibold text-[#c0392b]">{subjectForm.errors.name}</span>
+                )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="block text-xs font-bold text-[#17345b]">
                     Jam Tatap Muka (Per Minggu)
                   </label>
                   <input
                     type="number"
-                    name="hoursPerWeek"
-                    defaultValue="4"
+                    name="hours_per_week"
+                    value={subjectForm.data.hours_per_week}
+                    onChange={(e) => subjectForm.setData("hours_per_week", e.target.value)}
                     min="1"
                     max="10"
                     className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs font-bold text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
@@ -625,7 +593,8 @@ export default function MasterDataPage() {
                   <input
                     type="number"
                     name="kktp"
-                    defaultValue="70"
+                    value={subjectForm.data.kktp}
+                    onChange={(e) => subjectForm.setData("kktp", e.target.value)}
                     min="0"
                     max="100"
                     className="mt-1 w-full rounded-2xl bg-[#edf2f6] p-2.5 text-xs font-bold text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"

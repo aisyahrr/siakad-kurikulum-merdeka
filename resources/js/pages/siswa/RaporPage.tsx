@@ -13,6 +13,7 @@ import {
   FileText,
   X,
 } from "lucide-react";
+import { toast } from "sonner";
 import {
   useStudentReport,
 } from "@/hooks/siswa/useRaport";
@@ -255,7 +256,7 @@ export default function ReportPage() {
         <div className="relative z-10 mt-6 flex flex-wrap items-center gap-3">
           <button
             type="button"
-            onClick={() => alert("Mengunduh Rapor Digital Lengkap (PDF)...")}
+            onClick={() => toast.info("Mengunduh Rapor Digital Lengkap (PDF)...")}
             className="inline-flex items-center gap-2 rounded-full bg-[#17345b] px-6 py-3 text-xs font-bold text-white shadow-[4px_4px_10px_#cbd3db,-4px_-4px_10px_#fff] transition hover:bg-[#102743] hover:-translate-y-0.5 active:translate-y-0"
           >
             <Download size={14} />
@@ -395,7 +396,7 @@ export default function ReportPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    alert(`Mengunduh berkas transkrip ${r.semester}...`)
+                    toast.info(`Mengunduh berkas transkrip ${r.semester}...`)
                   }
                   aria-label="Unduh Berkas"
                   className="grid h-9 w-9 place-items-center rounded-full bg-[#e9eef3] text-[#17345b] shadow-[3px_3px_7px_#cbd3db,-3px_-3px_7px_#fff] transition hover:-translate-y-0.5 active:translate-y-0"
@@ -413,7 +414,7 @@ export default function ReportPage() {
       ========================================================= */}
       {isQrModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-[32px] bg-[#e9eef3] p-6 text-center shadow-2xl">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-[32px] bg-[#e9eef3] p-6 text-center shadow-2xl">
             <div className="flex items-center justify-between border-b border-[#d8e1e8] pb-3">
               <span className="text-[11px] font-bold text-[#68777c]">
                 Verifikasi Tanda Tangan BSrE
@@ -523,7 +524,7 @@ export default function ReportPage() {
               <button
                 type="button"
                 onClick={() =>
-                  alert(`Mengunduh berkas ${previewReport.semester}...`)
+                  toast.info(`Mengunduh berkas ${previewReport.semester}...`)
                 }
                 className="inline-flex items-center gap-1.5 rounded-full bg-[#17345b] px-5 py-2 text-xs font-bold text-white shadow"
               >

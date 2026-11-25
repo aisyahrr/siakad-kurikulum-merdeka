@@ -163,7 +163,7 @@ export function WorkspacePage({ role, title, eyebrow, description }: Props) {
           onClick={() => setModal(false)}
         >
           <div
-            className="w-full max-w-md rounded-[27px] bg-[#edf2f4] p-6 shadow-2xl"
+            className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-[27px] bg-[#edf2f4] p-6 shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex justify-between">

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { toast } from "sonner";
 import {
   Megaphone,
   Search,
@@ -222,7 +223,7 @@ export default function PengumumanPage() {
       {/* MODAL DETAIL BACA WARTA NEUMORPHIC */}
       {selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl rounded-[32px] bg-[#e9eef3] p-6 shadow-[10px_10px_25px_#b8c2cc,-10px_-10px_25px_#ffffff] sm:p-7">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-[32px] bg-[#e9eef3] p-6 shadow-[10px_10px_25px_#b8c2cc,-10px_-10px_25px_#ffffff] sm:p-7">
             {/* MODAL HEADER */}
             <div className="flex items-start justify-between border-b border-[#d8e1e8] pb-4">
               <div>
@@ -255,11 +256,11 @@ export default function PengumumanPage() {
 
               {/* LAMPIRAN DOKUMEN RESMI JIKA ADA */}
               {selectedItem.attachmentName && (
-                <div className="flex items-center justify-between rounded-2xl bg-[#e9eef3] p-3 shadow-[3px_3px_7px_#cbd3db,-3px_-3px_7px_#fff]">
-                  <div className="flex items-center gap-2.5">
-                    <FileText size={18} className="text-[#087b79]" />
-                    <div>
-                      <strong className="block text-xs font-bold text-[#20272d]">
+                <div className="flex flex-col gap-2.5 rounded-2xl bg-[#e9eef3] p-3 shadow-[3px_3px_7px_#cbd3db,-3px_-3px_7px_#fff] sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <FileText size={18} className="shrink-0 text-[#087b79]" />
+                    <div className="min-w-0">
+                      <strong className="block truncate text-xs font-bold text-[#20272d]">
                         {selectedItem.attachmentName}
                       </strong>
                       <span className="text-[11px] text-[#68777c]">Dokumen Edaran Resmi (PDF)</span>
@@ -267,8 +268,8 @@ export default function PengumumanPage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => alert(`Mengunduh ${selectedItem.attachmentName}...`)}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-[#087b79] px-3.5 py-1.5 text-[11px] font-bold text-white shadow-sm transition hover:bg-[#066361]"
+                    onClick={() => toast.info(`Mengunduh ${selectedItem.attachmentName}...`)}
+                    className="inline-flex items-center gap-1.5 self-start whitespace-nowrap rounded-full bg-[#087b79] px-3.5 py-1.5 text-[11px] font-bold text-white shadow-sm transition hover:bg-[#066361] sm:self-auto"
                   >
                     <Download size={13} />
                     Unduh

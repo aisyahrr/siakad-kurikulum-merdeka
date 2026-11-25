@@ -1,12 +1,12 @@
 import { useForm } from "@inertiajs/react";
 import { useState } from "react";
-import { DEMO_USERS, ROLE_LABELS } from "../../constants";
+import { Eye, EyeOff } from "lucide-react";
 import logo from "@/assets/Icon.png";
 
 export default function LoginPage() {
     const { data, setData, post, processing, errors } = useForm({
-        email: "siswa@siakad.test",
-        password: "password",
+        email: "",
+        password: "",
     });
 
     const [show, setShow] = useState(false);
@@ -21,11 +21,7 @@ export default function LoginPage() {
             {/* Outer Container (Split Screen) */}
             <div className="flex w-full max-w-[1050px] flex-col overflow-hidden rounded-[36px] bg-[#eef2f6] shadow-[16px_16px_32px_#cbd5e1,-16px_-16px_32px_#ffffff] lg:flex-row">
                 {/* SISI KIRI: Poster / Banner Akademik */}
-                <div className="relative flex flex-col justify-between bg-[#1e293b] p-8 text-white sm:p-12 lg:w-[60%] lg:p-10">
-                    {/* Background Subtle Accent */}
-                    <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl pointer-events-none"></div>
-                    <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none"></div>
-
+                <div className="relative hidden flex-col justify-between bg-[#1e293b] p-8 text-white sm:p-12 lg:flex lg:w-[60%] lg:p-10">
                     {/* Top Brand Info */}
                     <div className="flex items-center gap-3.5 z-10">
                         <div className="flex h-15 w-15 p-2 items-center justify-center rounded-2xl bg-[#E4EBF5] text-[#17345B]  transition-all group-hover:shadow-[inset_4px_4px_8px_#cbced1,inset_-4px_-4px_8px_#ffffff]">
@@ -33,7 +29,7 @@ export default function LoginPage() {
                         </div>
                         <div>
                             <b className="block text-lg tracking-wide">
-                                SIAKAD UNPAM
+                                JEGUK HIGH SCHOOL
                             </b>
                             <small className="text-slate-400">
                                 Portal Akademik Terpadu
@@ -43,7 +39,7 @@ export default function LoginPage() {
 
                     {/* Center Poster Content */}
                     <div className="my-10 z-10">
-                        <span className="inline-block rounded-full bg-blue-500/20 px-3.5 py-1 text-xs font-semibold tracking-wider text-blue-300 uppercase mb-4 border border-blue-400/20">
+                        <span className="inline-block rounded-full bg-white/10 px-3.5 py-1 text-xs font-semibold tracking-wider text-[#d9b46a] uppercase mb-4 border border-white/10">
                             Sistem Informasi Akademik
                         </span>
                         <h2 className="text-3xl font-extrabold leading-tight sm:text-4xl text-white">
@@ -59,7 +55,7 @@ export default function LoginPage() {
                     {/* Bottom Quick Feature Badges */}
                     <div className="grid grid-cols-2 gap-3 z-10 pt-4 border-t border-slate-700/60">
                         <div className="rounded-2xl bg-white/5 p-3.5 backdrop-blur-sm border border-white/5">
-                            <span className="block text-lg font-bold text-blue-400">
+                            <span className="block text-lg font-bold text-[#d9b46a]">
                                 100%
                             </span>
                             <span className="text-[11px] text-slate-400">
@@ -67,7 +63,7 @@ export default function LoginPage() {
                             </span>
                         </div>
                         <div className="rounded-2xl bg-white/5 p-3.5 backdrop-blur-sm border border-white/5">
-                            <span className="block text-lg font-bold text-emerald-400">
+                            <span className="block text-lg font-bold text-[#d9b46a]">
                                 Multi-Role
                             </span>
                             <span className="text-[11px] text-slate-400">
@@ -109,11 +105,11 @@ export default function LoginPage() {
                         )}
 
                         {/* Password Field */}
-                        <label className="mb-5 block text-sm font-semibold text-[#334155]">
+                        <label className="mb-2 block text-sm font-semibold text-[#334155]">
                             Password
                             <div className="mt-2 flex items-center rounded-2xl bg-[#eef2f6] shadow-[inset_4px_4px_8px_#cbd5e1,inset_-4px_-4px_8px_#ffffff]">
                                 <input
-                                    className="w-full border-0 bg-transparent px-4 py-3.5 text-sm text-[#0f172a] outline-none"
+                                    className="w-full border-0 bg-transparent px-4 py-3.5 text-sm text-[#0f172a] rounded-l-2xl outline-none"
                                     value={data.password}
                                     onChange={(e) =>
                                         setData("password", e.target.value)
@@ -122,15 +118,24 @@ export default function LoginPage() {
                                     placeholder="••••••••"
                                     required
                                 />
-                                <button
-                                    className="px-4 text-xs font-semibold text-[#475569] transition hover:text-[#0f172a]"
-                                    type="button"
-                                    onClick={() => setShow(!show)}
-                                >
-                                    {show ? "Sembunyikan" : "Lihat"}
-                                </button>
+                                 <button
+                                     className="pr-4 text-[#475569] transition hover:text-[#0f172a]"
+                                     type="button"
+                                     onClick={() => setShow(!show)}
+                                     title={show ? "Sembunyikan password" : "Lihat password"}
+                                 >
+                                     {show ? <EyeOff size={18} /> : <Eye size={18} />}
+                                 </button>
                             </div>
                         </label>
+                        <div className="mb-4 flex justify-end">
+                            <a
+                                href="/forgot-password"
+                                className="text-xs font-semibold text-[#1e293b] hover:underline"
+                            >
+                                Lupa Password?
+                            </a>
+                        </div>
                         {errors.password && (
                             <p className="-mt-4 mb-4 text-xs font-medium text-rose-500">
                                 {errors.password}
@@ -145,54 +150,6 @@ export default function LoginPage() {
                         >
                             {processing ? "Memproses..." : "Masuk ke Sistem"}
                         </button>
-
-                        {/* Divider */}
-                        <div className="my-6 flex items-center gap-3">
-                            <div className="h-[1px] flex-1 bg-[#cbd5e1]"></div>
-                            <span className="text-[11px] font-semibold tracking-wider text-[#94a3b8] uppercase">
-                                Pilih Akun Demo Cepat
-                            </span>
-                            <div className="h-[1px] flex-1 bg-[#cbd5e1]"></div>
-                        </div>
-
-                        {/* Demo Accounts List */}
-                        <div className="grid gap-2.5 max-h-[190px] overflow-y-auto pr-1">
-                            {DEMO_USERS.map((d) => {
-                                const isSelected = data.email === d.email;
-                                return (
-                                    <button
-                                        type="button"
-                                        className={`flex items-center gap-3 rounded-2xl border-0 p-2.5 text-left transition-all ${
-                                            isSelected
-                                                ? "bg-[#eef2f6] shadow-[inset_3px_3px_6px_#cbd5e1,inset_-3px_-3px_6px_#ffffff] ring-1 ring-[#1e293b]/30"
-                                                : "bg-[#eef2f6] shadow-[4px_4px_10px_#cbd5e1,-4px_-4px_10px_#ffffff] hover:shadow-[2px_2px_5px_#cbd5e1,-2px_-2px_5px_#ffffff]"
-                                        }`}
-                                        key={d.id}
-                                        onClick={() => {
-                                            setData({
-                                                email: d.email,
-                                                password: d.password,
-                                            });
-                                        }}
-                                    >
-                                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#1e293b] text-xs font-bold text-white shadow-[2px_2px_5px_#cbd5e1]">
-                                            {d.name[0]}
-                                        </span>
-                                        <div className="min-w-0 flex-1">
-                                            <b className="block truncate text-xs font-bold text-[#1e293b]">
-                                                {d.name}
-                                            </b>
-                                            <small className="block truncate text-[10px] font-medium text-[#64748b]">
-                                                {ROLE_LABELS[d.role]} •{" "}
-                                                <span className="text-[#475569]">
-                                                    {d.email}
-                                                </span>
-                                            </small>
-                                        </div>
-                                    </button>
-                                );
-                            })}
-                        </div>
                     </form>
                 </div>
             </div>

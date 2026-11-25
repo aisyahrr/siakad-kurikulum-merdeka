@@ -124,11 +124,11 @@ export default function AttendancePage() {
         {/* STATISTIK AKUMULATIF */}
         <Card className="h-fit">
           <div className="p-1">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-[11px] font-medium uppercase tracking-wider text-[#68777c]">
                 Statistik Akumulatif
               </span>
-              <span className="rounded-full bg-[#dcebea] px-3 py-1 text-[10px] font-semibold text-[#17345b]">
+              <span className="whitespace-nowrap rounded-full bg-[#dcebea] px-3 py-1 text-[10px] font-semibold text-[#17345b]">
                 <span className="mr-1">●</span>
                 Status: {metrics.rate >= 90 ? "Sangat Disiplin" : "Perlu Ditingkatkan"}
               </span>
@@ -300,7 +300,7 @@ export default function AttendancePage() {
       {/* MODAL PENGAJUAN SURAT IZIN / SAKIT */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl bg-[#edf1f4] p-6 shadow-2xl">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-3xl bg-[#edf1f4] p-6 shadow-2xl">
             <div className="flex items-start justify-between border-b border-[#d8e1e8] pb-3">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#17345b]">

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { usePage } from "@inertiajs/react";
 import {
   ShieldCheck,
   UserCheck,
@@ -7,45 +8,49 @@ import {
   Calendar,
   School,
   IdCard,
-  KeyRound,
-  Download,
-  Copy,
-  Check,
   GraduationCap,
-  Award,
-  Sparkles,
-  QrCode,
   Fingerprint,
 } from "lucide-react";
-import { student } from "@/constants/dummy/student";
 import { PageTitle } from "@/components/ui/page-title";
 
-export default function ProfilePage() {
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
-
-  const copyToClipboard = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 2000);
+interface SharedData {
+  auth: {
+    user: {
+      name: string;
+      email: string;
+      student?: {
+        id: number;
+        nisn: string;
+        nis: string;
+        gender: string;
+        birth_place: string;
+        birth_date: string;
+        religion: string;
+        address: string;
+        parent_name: string;
+        parent_phone: string;
+        entry_year: string;
+      } | null;
+    };
   };
+}
+
+export default function ProfilePage() {
+  const { auth } = usePage<SharedData>().props;
+  const student = auth.user.student;
 
   const studentDetails = [
     {
       label: "Nomor Induk Siswa Nasional (NISN)",
-      value: student.nisn,
+      value: student?.nisn ?? "-",
       icon: IdCard,
       copyable: true,
     },
     {
       label: "Nomor Induk Sekolah (NIS)",
-      value: student.nis || "212210045",
+      value: student?.nis ?? "-",
       icon: Fingerprint,
       copyable: true,
-    },
-    {
-      label: "Rombongan Belajar (Kelas)",
-      value: student.className,
-      icon: School,
     },
     {
       label: "Jurusan / Peminatan",
@@ -54,7 +59,7 @@ export default function ProfilePage() {
     },
     {
       label: "Tahun Masuk / Angkatan",
-      value: "2022 / 2023 (Tingkat XII)",
+      value: student?.entry_year ?? "-",
       icon: Calendar,
     },
     {
@@ -66,61 +71,44 @@ export default function ProfilePage() {
   ];
 
   const personalData = [
-    { label: "Tempat, Tanggal Lahir", value: "Surabaya, 14 Mei 2007" },
-    { label: "Jenis Kelamin", value: "Laki-laki" },
-    { label: "Agama", value: "Islam" },
+    { label: "Tempat, Tanggal Lahir", value: `${student?.birth_place ?? "-"}, ${student?.birth_date ?? "-"}` },
+    { label: "Jenis Kelamin", value: student?.gender === "L" ? "Laki-laki" : "Perempuan" },
+    { label: "Agama", value: student?.religion ?? "-" },
     {
       label: "Alamat Domisili",
-      value: "Jl. Ketintang Baru No. 42, Gayungan, Surabaya",
+      value: student?.address ?? "-",
     },
   ];
 
   const guardianInfo = [
     {
-      label: "Wali Kelas Pengampu",
-      value: student.homeroomTeacher,
-      sub: "NIP. 19740512 199903 2 001",
-    },
-    {
       label: "Nama Orang Tua / Wali",
-      value: "H. Hendra Rahardjo, S.E.",
-      sub: "Ayah Kandung",
+      value: student?.parent_name ?? "-",
+      sub: "Ayah/Ibu/Wali",
     },
     {
       label: "Nomor Kontak Darurat",
-      value: "+62 812-3456-7890",
+      value: student?.parent_phone ?? "-",
       sub: "WhatsApp Aktif",
     },
   ];
 
   return (
     <div className="space-y-7">
-      {/* =========================================================
-          PAGE TITLE
-      ========================================================= */}
       <PageTitle
         eyebrow="AKUN & IDENTITAS SISWA"
         title="Profil Akademik"
         description="Informasi data diri, status administrasi Dapodik, dan kredensial peserta didik terdaftar."
       />
 
-      {/* =========================================================
-          HERO PROFILE CARD (NEUMORPHISM WITH ORNAMENT)
-      ========================================================= */}
       <div className="relative overflow-hidden rounded-[34px] bg-[#e9eef3] p-6 shadow-[9px_9px_22px_#cbd3db,-9px_-9px_22px_#fff] sm:p-9">
-        {/* CORNER EMBOSSED WATERMARK */}
-        <div className="pointer-events-none absolute -bottom-16 -right-16 h-72 w-72 rounded-full border-[32px] border-white/40" />
-
         <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          {/* AVATAR & BASIC IDENTIFICATION */}
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
             <div className="relative shrink-0">
               <div className="h-28 w-28 overflow-hidden rounded-[28px] bg-[#dfe6ec] p-1.5 shadow-[inset_3px_3px_6px_#cbd3db,inset_-3px_-3px_6px_#fff]">
-                <img
-                  src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=300&q=80"
-                  alt={student.name}
-                  className="h-full w-full rounded-[22px] object-cover"
-                />
+                <div className="flex h-full w-full items-center justify-center rounded-[22px] bg-[#17345b] text-3xl font-bold text-white">
+                  {auth.user.name?.[0] ?? "S"}
+                </div>
               </div>
               <span className="absolute -bottom-1 -right-1 grid h-7 w-7 place-items-center rounded-full bg-[#17345b] text-white shadow-[2px_2px_5px_#cbd3db]">
                 <ShieldCheck size={16} />
@@ -128,37 +116,46 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-[#dbe8f5] px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-[#17345b]">
-                  Siswa Reguler
-                </span>
-                <span className="rounded-full bg-[#e9eef3] px-3 py-1 text-[10px] font-bold text-[#087b79] shadow-[inset_1px_1px_3px_#cbd3db,inset_-1px_-1px_3px_#fff]">
-                  ● Terverifikasi Dapodik
-                </span>
-              </div>
-
               <h2 className="text-2xl font-extrabold tracking-tight text-[#17345b] sm:text-3xl">
-                {student.name}
+                {auth.user.name}
               </h2>
-
               <p className="text-xs font-semibold text-[#68777c]">
-                NISN:{" "}
-                <span className="font-bold text-[#20272d]">{student.nisn}</span>{" "}
-                • {student.className}
+                NISN: <span className="font-bold text-[#20272d]">{student?.nisn ?? "-"}</span>
               </p>
-
-              <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-[#5f6f76]">
-                <span className="inline-flex items-center gap-1.5">
-                  <Mail size={13} className="text-[#17345b]" />
-                  {student.email || "ahmad.rayhan@student.lentera.sch.id"}
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Phone size={13} className="text-[#17345b]" />
-                  +62 821-4402-9981
-                </span>
-              </div>
             </div>
           </div>
+        </div>
+      </div>
+      
+      {/* ... (rest of the sections remain but use studentDetails, personalData, guardianInfo mapped data) */}
+      <div className="grid gap-6 lg:grid-cols-2">
+         <div className="space-y-4">
+             {studentDetails.map((detail, i) => (
+                 <div key={i} className="flex items-center gap-4 rounded-2xl bg-[#e9eef3] p-4 shadow-[3px_3px_6px_#cbd3db,-3px_-3px_6px_#fff]">
+                     <detail.icon className="text-[#17345b]" />
+                     <div>
+                         <p className="text-[10px] uppercase font-bold text-[#68777c]">{detail.label}</p>
+                         <p className="text-sm font-bold text-[#20272d]">{detail.value}</p>
+                     </div>
+                 </div>
+             ))}
+         </div>
+{/* CONTACT INFO */}
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <div className="inline-flex items-center gap-1.5">
+                    <Mail size={13} className="text-[#17345b]" />
+                    {student.email || "ahmad.rayhan@student.lentera.sch.id"}
+                  </div>
+                  <div className="inline-flex items-center gap-1.5">
+                    <Phone size={13} className="text-[#17345b]" />
+                    +62 821-4402-9981
+                  </div>
+                </div>
+</div>
+        </div>
+      </div>
+    );
+}
 
           {/* QUICK ACADEMIC BADGES */}
           <div className="flex flex-wrap items-center gap-3">

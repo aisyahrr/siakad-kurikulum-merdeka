@@ -1,198 +1,346 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
+import { router, useForm } from "@inertiajs/react";
 import {
-  ClipboardCheck,
-  CheckCircle2,
-  Clock,
-  Search,
   ArrowRight,
   AlertCircle,
-  Sparkles,
-  FileEdit,
-  Save,
   Check,
+  CheckCircle2,
+  ClipboardCheck,
+  Clock,
+  FileEdit,
+  Plus,
+  Save,
+  Search,
+  Sparkles,
+  Trash2,
 } from "lucide-react";
 import { Header, Modal, ModalActions, field } from "./shared";
-import { quizzes as initialQuizzes } from "./data";
 
 /* ==========================================================================
    1. HALAMAN KUIS & UJIAN (+ MODAL KOREKSI ESSAY SPLIT-VIEW)
    ========================================================================== */
-interface QuizItem {
-  id?: string;
-  title: string;
-  subject: string;
-  rombel?: string;
-  type: string;
-  duration?: number;
-  mcqCount?: number;
-  essayCount?: number;
-  responses: number;
-  totalStudents?: number;
-  status: "Terbit" | "Draft";
+interface QuizOptionItem {
+  id: number;
+  option_text: string;
+  is_correct: boolean;
 }
 
-interface StudentSubmission {
-  id: string;
+interface QuizQuestionItem {
+  id: number;
+  type: "mcq" | "essay";
+  question_text: string;
+  points: number;
+  options: QuizOptionItem[];
+}
+
+interface QuizAnswerItem {
+  quiz_question_id: number;
+  quiz_option_id: number | null;
+  essay_answer: string | null;
+  score: number | null;
+}
+
+interface QuizSubmissionItem {
+  id: number;
+  mcq_score: number;
+  essay_score: number | null;
+  total_score: number | null;
+  is_graded: boolean;
+  feedback: string | null;
+  submitted_at?: string | null;
+  student?: { id: number; nisn?: string; user?: { name: string } };
+  answers?: QuizAnswerItem[];
+}
+
+interface DbQuiz {
+  id: number;
+  title: string;
+  type: string;
+  duration: number;
+  status: "Terbit" | "Draft";
+  school_class?: { id: number; name: string } | null;
+  subject?: { id: number; name: string } | null;
+  submissions_count?: number;
+  questions?: QuizQuestionItem[];
+  submissions?: QuizSubmissionItem[];
+}
+
+interface Option {
+  id: number;
   name: string;
-  nisn: string;
-  mcqScore: number;
-  essayScore: number | null;
-  essayAnswer: string;
-  feedback: string;
-  isGraded: boolean;
+}
+
+interface DraftOption {
+  text: string;
+  correct: boolean;
+}
+
+interface DraftQuestion {
+  type: "mcq" | "essay";
+  text: string;
+  points: number;
+  options: DraftOption[];
 }
 
 interface KuisPageProps {
-  dbQuizzes?: Array<{
-    id: number;
-    title: string;
-    type: string;
-    duration: number;
-    status: "Terbit" | "Draft";
-    school_class?: { id: number; name: string };
-    subject?: { id: number; name: string };
-    submissions_count?: number;
-    questions?: Array<{ id: number; type: string }>;
-  }>;
+  dbQuizzes?: DbQuiz[];
+  classes?: Option[];
+  subjects?: Option[];
 }
 
-export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
-  const [items, setItems] = useState<QuizItem[]>(() => {
-    if (dbQuizzes && dbQuizzes.length > 0) {
-      return dbQuizzes.map((item) => ({
-        id: `quiz-${item.id}`,
-        title: item.title,
-        subject: item.subject?.name ?? "Mata Pelajaran",
-        rombel: item.school_class?.name ?? "XII MIPA 1",
-        type: item.type,
-        duration: item.duration,
-        mcqCount: item.questions?.filter((q) => q.type === "mcq").length || 10,
-        essayCount: item.questions?.filter((q) => q.type === "essay").length || 2,
-        responses: item.submissions_count || 0,
-        totalStudents: 36,
-        status: item.status,
-      }));
-    }
-    return initialQuizzes.map((item, idx) => ({
-      id: `quiz-${idx + 1}`,
-      title: item.title,
-      subject: item.subject,
-      rombel: "XII MIPA 1",
-      type: item.type,
-      duration: idx % 2 === 0 ? 45 : 60,
-      mcqCount: 15,
-      essayCount: 3,
-      responses: Number(item.responses) || 32,
-      totalStudents: 36,
-      status: (item.status as "Terbit" | "Draft") ?? "Terbit",
-    }));
-  });
+function emptyMcqQuestion(): DraftQuestion {
+  return {
+    type: "mcq",
+    text: "",
+    points: 10,
+    options: [
+      { text: "", correct: true },
+      { text: "", correct: false },
+      { text: "", correct: false },
+      { text: "", correct: false },
+    ],
+  };
+}
 
+function emptyEssayQuestion(): DraftQuestion {
+  return { type: "essay", text: "", points: 20, options: [] };
+}
+
+export default function KuisPage({
+  dbQuizzes = [],
+  classes = [],
+  subjects = [],
+}: KuisPageProps = {}) {
   const [modalCreate, setModalCreate] = useState(false);
-  const [modalGrading, setModalGrading] = useState<QuizItem | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [modalGradingId, setModalGradingId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"Semua" | "Terbit" | "Draft">("Semua");
-  const [feedbackAlert, setFeedbackAlert] = useState("");
+  const [questionError, setQuestionError] = useState("");
+  const [draftQuestions, setDraftQuestions] = useState<DraftQuestion[]>([emptyMcqQuestion()]);
 
-  // Data dummy siswa yang mengumpulkan essay untuk modal koreksi
-  const [submissions, setSubmissions] = useState<StudentSubmission[]>([
-    {
-      id: "sub-1",
-      name: "Alya Putri",
-      nisn: "0064928110",
-      mcqScore: 50, // Dari maks 50
-      essayScore: 42,
-      essayAnswer:
-        "Metode integral substitusi digunakan ketika ada fungsi dan turunannya saling berkorelasi langsung dalam satu integran f(g(x))g'(x).",
-      feedback: "Pemahaman konsep sudah tepat dan penjabaran rumus runtut.",
-      isGraded: true,
-    },
-    {
-      id: "sub-2",
-      name: "Bagas Ramadhan",
-      nisn: "0064928111",
-      mcqScore: 35,
-      essayScore: null,
-      essayAnswer:
-        "Substitusi dilakukan dengan mengganti x menjadi variabel u agar lebih mudah diintegralkan secara langsung tanpa faktorisasi panjang.",
-      feedback: "",
-      isGraded: false,
-    },
-    {
-      id: "sub-3",
-      name: "Citra Lestari",
-      nisn: "0064928112",
-      mcqScore: 45,
-      essayScore: null,
-      essayAnswer:
-        "Langkah pertama tentukan variabel pemisalan u = g(x), kemudian cari turunan du/dx untuk mengganti diferensial dx pada fungsi awal.",
-      feedback: "",
-      isGraded: false,
-    },
-  ]);
+  const [activeSubmissionId, setActiveSubmissionId] = useState<number | null>(null);
+  const [currentEssayInput, setCurrentEssayInput] = useState<number>(0);
+  const [currentFeedbackInput, setCurrentFeedbackInput] = useState<string>("");
 
-  const [activeSubmissionId, setActiveSubmissionId] = useState<string>("sub-2");
-  const activeSubmission = submissions.find((s) => s.id === activeSubmissionId) ?? submissions[0];
+  const form = useForm({
+    school_class_id: "",
+    subject_id: "",
+    title: "",
+    type: "Formatif",
+    duration: 45,
+    status: "Terbit" as "Terbit" | "Draft",
+  });
 
-  const [currentEssayInput, setCurrentEssayInput] = useState<number>(activeSubmission.essayScore ?? 0);
-  const [currentFeedbackInput, setCurrentFeedbackInput] = useState<string>(activeSubmission.feedback);
+  const modalGrading = useMemo(
+    () => dbQuizzes.find((quiz) => quiz.id === modalGradingId) ?? null,
+    [dbQuizzes, modalGradingId],
+  );
 
-  // Sync saat pindah siswa
-  const selectStudentForGrading = (sub: StudentSubmission) => {
-    setActiveSubmissionId(sub.id);
-    setCurrentEssayInput(sub.essayScore ?? 0);
-    setCurrentFeedbackInput(sub.feedback);
+  const gradingSubmissions = modalGrading?.submissions ?? [];
+  const activeSubmission =
+    gradingSubmissions.find((submission) => submission.id === activeSubmissionId) ??
+    gradingSubmissions[0];
+  const essayQuestion = modalGrading?.questions?.find((question) => question.type === "essay");
+  const activeEssayAnswer =
+    activeSubmission?.answers?.find(
+      (answer) => answer.quiz_question_id === essayQuestion?.id,
+    )?.essay_answer ?? "Siswa belum menjawab soal essay ini.";
+
+  const openCreate = () => {
+    setEditingId(null);
+    form.reset();
+    form.clearErrors();
+    setQuestionError("");
+    setDraftQuestions([emptyMcqQuestion()]);
+    setModalCreate(true);
   };
 
-  const handleSaveGrading = () => {
-    setSubmissions((prev) =>
-      prev.map((s) =>
-        s.id === activeSubmissionId
-          ? {
-              ...s,
-              essayScore: currentEssayInput,
-              feedback: currentFeedbackInput,
-              isGraded: true,
-            }
-          : s
-      )
+  const openEdit = (quiz: DbQuiz) => {
+    setEditingId(quiz.id);
+    form.setData({
+      school_class_id: quiz.school_class?.id ? String(quiz.school_class.id) : "",
+      subject_id: quiz.subject?.id ? String(quiz.subject.id) : "",
+      title: quiz.title,
+      type: quiz.type,
+      duration: quiz.duration,
+      status: quiz.status,
+    });
+    form.clearErrors();
+    setQuestionError("");
+
+    const mapped = (quiz.questions ?? []).map<DraftQuestion>((question) => ({
+      type: question.type,
+      text: question.question_text,
+      points: question.points,
+      options:
+        question.type === "mcq"
+          ? question.options.map((option) => ({
+              text: option.option_text,
+              correct: option.is_correct,
+            }))
+          : [],
+    }));
+
+    setDraftQuestions(mapped.length > 0 ? mapped : [emptyMcqQuestion()]);
+    setModalCreate(true);
+  };
+
+  const openGrading = (quiz: DbQuiz) => {
+    const first = quiz.submissions?.[0];
+    setModalGradingId(quiz.id);
+    setActiveSubmissionId(first?.id ?? null);
+    setCurrentEssayInput(first?.essay_score ?? 0);
+    setCurrentFeedbackInput(first?.feedback ?? "");
+  };
+
+  const selectStudentForGrading = (submission: QuizSubmissionItem) => {
+    setActiveSubmissionId(submission.id);
+    setCurrentEssayInput(submission.essay_score ?? 0);
+    setCurrentFeedbackInput(submission.feedback ?? "");
+  };
+
+  const saveGrading = () => {
+    if (!activeSubmission) {
+      return;
+    }
+
+    router.post(
+      `/guru/kuis/grade/${activeSubmission.id}`,
+      {
+        essay_score: currentEssayInput,
+        feedback: currentFeedbackInput,
+      },
+      { preserveScroll: true },
     );
-    setFeedbackAlert(`Nilai essay ${activeSubmission.name} berhasil disimpan.`);
-    setTimeout(() => setFeedbackAlert(""), 3500);
+  };
+
+  const updateQuestion = (index: number, patch: Partial<DraftQuestion>) => {
+    setDraftQuestions((previous) =>
+      previous.map((question, position) =>
+        position === index ? { ...question, ...patch } : question,
+      ),
+    );
+  };
+
+  const updateOption = (questionIndex: number, optionIndex: number, text: string) => {
+    setDraftQuestions((previous) =>
+      previous.map((question, position) => {
+        if (position !== questionIndex) {
+          return question;
+        }
+
+        return {
+          ...question,
+          options: question.options.map((option, optionPosition) =>
+            optionPosition === optionIndex ? { ...option, text } : option,
+          ),
+        };
+      }),
+    );
+  };
+
+  const markCorrectOption = (questionIndex: number, optionIndex: number) => {
+    setDraftQuestions((previous) =>
+      previous.map((question, position) => {
+        if (position !== questionIndex) {
+          return question;
+        }
+
+        return {
+          ...question,
+          options: question.options.map((option, optionPosition) => ({
+            ...option,
+            correct: optionPosition === optionIndex,
+          })),
+        };
+      }),
+    );
+  };
+
+  const removeQuestion = (index: number) => {
+    setDraftQuestions((previous) => previous.filter((_, position) => position !== index));
+  };
+
+  const submitQuiz = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setQuestionError("");
+
+    if (draftQuestions.length === 0) {
+      setQuestionError("Tambahkan minimal satu soal.");
+      return;
+    }
+
+    for (const [index, question] of draftQuestions.entries()) {
+      if (!question.text.trim()) {
+        setQuestionError(`Soal #${index + 1} belum diisi.`);
+        return;
+      }
+
+      if (question.type !== "mcq") {
+        continue;
+      }
+
+      const filledOptions = question.options.filter((option) => option.text.trim());
+
+      if (filledOptions.length < 2) {
+        setQuestionError(`Soal #${index + 1} membutuhkan minimal 2 opsi jawaban.`);
+        return;
+      }
+
+      if (filledOptions.filter((option) => option.correct).length !== 1) {
+        setQuestionError(`Pilih tepat satu jawaban benar pada soal #${index + 1}.`);
+        return;
+      }
+    }
+
+    const questions = draftQuestions.map((question) => ({
+      question_text: question.text,
+      type: question.type,
+      points: question.points,
+      options:
+        question.type === "mcq"
+          ? question.options
+              .filter((option) => option.text.trim())
+              .map((option) => ({ option_text: option.text, is_correct: option.correct }))
+          : [],
+    }));
+
+    form.transform((data) => ({ ...data, questions }));
+
+    const options = {
+      preserveScroll: true,
+      onSuccess: () => {
+        setModalCreate(false);
+        setEditingId(null);
+      },
+    };
+
+    if (editingId) {
+      form.put(`/guru/kuis/${editingId}`, options);
+      return;
+    }
+
+    form.post("/guru/kuis", options);
+  };
+
+  const removeQuiz = (quiz: DbQuiz) => {
+    if (!window.confirm(`Hapus kuis "${quiz.title}"?`)) {
+      return;
+    }
+
+    router.delete(`/guru/kuis/${quiz.id}`, { preserveScroll: true });
   };
 
   const filteredQuizzes = useMemo(() => {
-    return items.filter((q) => {
+    return dbQuizzes.filter((quiz) => {
       const matchSearch =
-        q.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        q.subject.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchStatus = statusFilter === "Semua" || q.status === statusFilter;
+        quiz.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (quiz.subject?.name ?? "").toLowerCase().includes(searchQuery.toLowerCase());
+      const matchStatus = statusFilter === "Semua" || quiz.status === statusFilter;
       return matchSearch && matchStatus;
     });
-  }, [items, searchQuery, statusFilter]);
-
-  const handleCreateQuiz = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const newQuiz: QuizItem = {
-      id: `quiz-${Date.now()}`,
-      title: String(form.get("title")),
-      subject: String(form.get("subject")),
-      rombel: String(form.get("rombel")),
-      type: String(form.get("type")),
-      duration: Number(form.get("duration")) || 45,
-      mcqCount: Number(form.get("mcqCount")) || 10,
-      essayCount: Number(form.get("essayCount")) || 2,
-      responses: 0,
-      totalStudents: 36,
-      status: "Terbit",
-    };
-
-    setItems((prev) => [newQuiz, ...prev]);
-    setModalCreate(false);
-    setFeedbackAlert(`Paket evaluasi "${newQuiz.title}" berhasil diterbitkan.`);
-    setTimeout(() => setFeedbackAlert(""), 4000);
-  };
+  }, [dbQuizzes, searchQuery, statusFilter]);
 
   return (
     <section className="space-y-6">
@@ -201,7 +349,7 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
         title="Kuis & Evaluasi Pembelajaran"
         description="Rancang paket asesmen formatif atau sumatif, batas waktu pengerjaan, dan pantau pengumpulan jawaban siswa."
         action="Buat Paket Kuis"
-        onAction={() => setModalCreate(true)}
+        onAction={openCreate}
       />
 
       {/* FILTER & SEARCH BAR */}
@@ -236,19 +384,11 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
         </div>
       </div>
 
-      {/* FEEDBACK ALERT */}
-      {feedbackAlert && (
-        <div className="flex items-center gap-2 rounded-2xl bg-[#dff4ed] px-4 py-3 text-xs font-semibold text-[#087b79] shadow-sm">
-          <CheckCircle2 size={16} />
-          <span>{feedbackAlert}</span>
-        </div>
-      )}
-
       {/* QUIZ CARDS LIST */}
       <div className="space-y-4">
         {filteredQuizzes.map((item) => (
           <div
-            key={item.id ?? item.title}
+            key={item.id}
             className="flex flex-col justify-between rounded-[28px] bg-[#e9eef3] p-5 shadow-[5px_5px_12px_#cbd3db,-5px_-5px_12px_#fff] transition-all duration-200 hover:-translate-y-0.5 sm:p-6"
           >
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -260,10 +400,10 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-[#dbe8f5] px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-[#17345b]">
-                      {item.rombel}
+                      {item.school_class?.name ?? "Semua Kelas"}
                     </span>
                     <span className="text-[11px] font-bold text-[#68777c]">
-                      {item.subject}
+                      {item.subject?.name ?? "Mata Pelajaran"}
                     </span>
                     <span className="text-[#a8b5bc]">•</span>
                     <span className="rounded-full bg-[#e2e8f0] px-2 py-0.5 text-[10px] font-bold uppercase text-[#475569]">
@@ -282,7 +422,10 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
                     </span>
                     <span>•</span>
                     <span>
-                      {item.mcqCount} Pilihan Ganda · {item.essayCount} Esei
+                      {item.questions?.filter((question) => question.type === "mcq").length ?? 0}{" "}
+                      Pilihan Ganda ·{" "}
+                      {item.questions?.filter((question) => question.type === "essay").length ?? 0}{" "}
+                      Esei
                     </span>
                   </div>
                 </div>
@@ -306,14 +449,18 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
               <div className="inline-flex items-center gap-2 rounded-full bg-[#edf2f6] px-3.5 py-1 text-[11px] font-semibold text-[#5a6a72] shadow-[inset_1px_1px_2px_#cbd3db,inset_-1px_-1px_2px_#fff]">
                 <Sparkles size={13} className="text-[#087b79]" />
                 <span>
-                  Respons Masuk: <strong className="text-[#17345b]">{item.responses}</strong> / {item.totalStudents ?? 36} Siswa
+                  Respons Masuk:{" "}
+                  <strong className="text-[#17345b]">
+                    {item.submissions_count ?? item.submissions?.length ?? 0}
+                  </strong>{" "}
+                  Siswa
                 </span>
               </div>
 
               <div className="flex items-center gap-2 self-end sm:self-auto">
                 <button
                   type="button"
-                  onClick={() => setModalCreate(true)}
+                  onClick={() => openEdit(item)}
                   className="inline-flex items-center gap-1.5 rounded-full bg-[#e9eef3] px-3.5 py-1.5 text-[11px] font-bold text-[#55636a] shadow-[2px_2px_5px_#cbd3db,-2px_-2px_5px_#fff] transition hover:text-[#17345b]"
                 >
                   Edit Paket
@@ -321,7 +468,16 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
 
                 <button
                   type="button"
-                  onClick={() => setModalGrading(item)}
+                  onClick={() => removeQuiz(item)}
+                  className="inline-grid h-8 w-8 place-items-center rounded-full bg-[#e9eef3] text-[#c0392b] shadow-[2px_2px_5px_#cbd3db,-2px_-2px_5px_#fff] transition hover:bg-[#f7e1df]"
+                  title="Hapus kuis"
+                >
+                  <Trash2 size={14} />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => openGrading(item)}
                   className="inline-flex items-center gap-1.5 rounded-full bg-[#17345b] px-4 py-1.5 text-[11px] font-bold text-white shadow-[2px_2px_5px_#cbd3db] transition hover:bg-[#102743]"
                 >
                   <FileEdit size={13} />
@@ -347,30 +503,55 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
         </div>
       )}
 
-      {/* MODAL BUAT KUIS BARU */}
+      {/* MODAL BUAT / EDIT KUIS */}
       {modalCreate && (
         <Modal
-          title="Buat Kuis & Evaluasi Baru"
-          description="Atur rincian penilaian pembelajaran, komposisi butir soal, dan durasi pengerjaan siswa."
+          title={editingId ? "Edit Kuis & Evaluasi" : "Buat Kuis & Evaluasi Baru"}
+          description="Atur rincian asesmen, kelas target, dan butir soal yang akan dikerjakan siswa."
           onClose={() => setModalCreate(false)}
         >
-          <form onSubmit={handleCreateQuiz}>
+          <form onSubmit={submitQuiz}>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <label className="block text-xs font-bold text-[#17345b]">
                 Mata Pelajaran
-                <select className={`${field} mt-1`} name="subject" required>
-                  <option>Matematika Peminatan</option>
-                  <option>Fisika Lanjutan</option>
-                  <option>Matematika Wajib</option>
+                <select
+                  className={`${field} mt-1`}
+                  value={form.data.subject_id}
+                  onChange={(event) => form.setData("subject_id", event.target.value)}
+                >
+                  <option value="">Pilih mata pelajaran</option>
+                  {subjects.map((subject) => (
+                    <option key={subject.id} value={subject.id}>
+                      {subject.name}
+                    </option>
+                  ))}
                 </select>
+                {form.errors.subject_id && (
+                  <span className="mt-1 block text-[11px] text-[#c0392b]">
+                    {form.errors.subject_id}
+                  </span>
+                )}
               </label>
 
               <label className="block text-xs font-bold text-[#17345b]">
                 Rombel Target
-                <select className={`${field} mt-1`} name="rombel" required>
-                  <option>XII MIPA 1</option>
-                  <option>XI MIPA 2</option>
+                <select
+                  className={`${field} mt-1`}
+                  value={form.data.school_class_id}
+                  onChange={(event) => form.setData("school_class_id", event.target.value)}
+                >
+                  <option value="">Pilih kelas</option>
+                  {classes.map((schoolClass) => (
+                    <option key={schoolClass.id} value={schoolClass.id}>
+                      {schoolClass.name}
+                    </option>
+                  ))}
                 </select>
+                {form.errors.school_class_id && (
+                  <span className="mt-1 block text-[11px] text-[#c0392b]">
+                    {form.errors.school_class_id}
+                  </span>
+                )}
               </label>
             </div>
 
@@ -378,16 +559,23 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
               Judul Asesmen / Evaluasi
               <input
                 className={`${field} mt-1`}
-                name="title"
+                value={form.data.title}
+                onChange={(event) => form.setData("title", event.target.value)}
                 placeholder="Contoh: Evaluasi Formatif Vektor dan Geometri Ruang"
-                required
               />
+              {form.errors.title && (
+                <span className="mt-1 block text-[11px] text-[#c0392b]">{form.errors.title}</span>
+              )}
             </label>
 
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
               <label className="block text-xs font-bold text-[#17345b]">
                 Tipe Asesmen
-                <select className={`${field} mt-1`} name="type" defaultValue="Formatif">
+                <select
+                  className={`${field} mt-1`}
+                  value={form.data.type}
+                  onChange={(event) => form.setData("type", event.target.value)}
+                >
                   <option value="Formatif">Formatif (Kuis Harian)</option>
                   <option value="Sumatif">Sumatif (Ujian Blok / STS)</option>
                 </select>
@@ -397,43 +585,173 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
                 Batas Waktu (Menit)
                 <input
                   className={`${field} mt-1`}
-                  name="duration"
+                  value={form.data.duration}
+                  onChange={(event) =>
+                    form.setData("duration", Number(event.target.value) || 5)
+                  }
                   type="number"
                   min="5"
                   max="180"
-                  defaultValue="45"
-                  required
                 />
+              </label>
+
+              <label className="block text-xs font-bold text-[#17345b]">
+                Status
+                <select
+                  className={`${field} mt-1`}
+                  value={form.data.status}
+                  onChange={(event) =>
+                    form.setData("status", event.target.value as "Terbit" | "Draft")
+                  }
+                >
+                  <option value="Terbit">Terbit</option>
+                  <option value="Draft">Draft</option>
+                </select>
               </label>
             </div>
 
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <label className="block text-xs font-bold text-[#17345b]">
-                Jumlah Soal Pilihan Ganda (Auto-Scored)
-                <input
-                  className={`${field} mt-1`}
-                  name="mcqCount"
-                  type="number"
-                  min="0"
-                  defaultValue="15"
-                />
-              </label>
+            <div className="mt-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-extrabold uppercase tracking-wide text-[#17345b]">
+                  Butir Soal ({draftQuestions.length})
+                </span>
+                <span className="text-[10px] text-[#68777c]">
+                  PG dinilai otomatis, essay dikoreksi manual
+                </span>
+              </div>
 
-              <label className="block text-xs font-bold text-[#17345b]">
-                Jumlah Soal Esei (Koreksi Manual)
-                <input
-                  className={`${field} mt-1`}
-                  name="essayCount"
-                  type="number"
-                  min="0"
-                  defaultValue="3"
-                />
-              </label>
+              {draftQuestions.map((question, index) => (
+                <div
+                  key={index}
+                  className="rounded-2xl bg-[#edf2f6] p-3 shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff]"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-[11px] font-extrabold text-[#68777c]">
+                      Soal #{index + 1}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={question.type}
+                        onChange={(event) => {
+                          const type = event.target.value as "mcq" | "essay";
+                          updateQuestion(index, {
+                            type,
+                            options:
+                              type === "essay"
+                                ? []
+                                : [
+                                    { text: "", correct: true },
+                                    { text: "", correct: false },
+                                    { text: "", correct: false },
+                                    { text: "", correct: false },
+                                  ],
+                          });
+                        }}
+                        className="rounded-lg bg-[#e9eef3] px-2 py-1 text-[11px] font-bold text-[#17345b] outline-none"
+                      >
+                        <option value="mcq">Pilihan Ganda</option>
+                        <option value="essay">Essay</option>
+                      </select>
+                      <input
+                        type="number"
+                        min={1}
+                        max={100}
+                        value={question.points}
+                        onChange={(event) =>
+                          updateQuestion(index, {
+                            points: Math.min(100, Math.max(1, Number(event.target.value) || 1)),
+                          })
+                        }
+                        className="w-16 rounded-lg bg-[#e9eef3] px-2 py-1 text-[11px] font-bold text-[#17345b] outline-none"
+                        title="Poin soal"
+                      />
+                      {draftQuestions.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeQuestion(index)}
+                          className="rounded-full p-1.5 text-[#c0392b] transition hover:bg-[#f7e1df]"
+                          title="Hapus soal"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <textarea
+                    value={question.text}
+                    onChange={(event) => updateQuestion(index, { text: event.target.value })}
+                    placeholder={
+                      question.type === "mcq"
+                        ? "Tulis pertanyaan pilihan ganda..."
+                        : "Tulis pertanyaan essay..."
+                    }
+                    className="mt-2 min-h-16 w-full rounded-xl bg-[#e9eef3] p-2.5 text-xs text-[#20272d] outline-none"
+                  />
+
+                  {question.type === "mcq" && (
+                    <div className="mt-2 space-y-1.5">
+                      {question.options.map((option, optionIndex) => (
+                        <div key={optionIndex} className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name={`correct-${index}`}
+                            checked={option.correct}
+                            onChange={() => markCorrectOption(index, optionIndex)}
+                            className="accent-[#087b79]"
+                            title="Tandai jawaban benar"
+                          />
+                          <input
+                            value={option.text}
+                            onChange={(event) =>
+                              updateOption(index, optionIndex, event.target.value)
+                            }
+                            placeholder={`Opsi ${String.fromCharCode(65 + optionIndex)}`}
+                            className="w-full rounded-lg bg-[#e9eef3] px-2.5 py-1.5 text-xs text-[#20272d] outline-none"
+                          />
+                        </div>
+                      ))}
+                      <p className="text-[10px] text-[#68777c]">
+                        Pilih radio di samping jawaban yang benar.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDraftQuestions((previous) => [...previous, emptyMcqQuestion()])}
+                  className="inline-flex items-center gap-1 rounded-full bg-[#e9eef3] px-3 py-1.5 text-[11px] font-bold text-[#17345b] shadow-[2px_2px_5px_#cbd3db,-2px_-2px_5px_#fff]"
+                >
+                  <Plus size={13} /> Pilihan Ganda
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDraftQuestions((previous) => [...previous, emptyEssayQuestion()])
+                  }
+                  className="inline-flex items-center gap-1 rounded-full bg-[#e9eef3] px-3 py-1.5 text-[11px] font-bold text-[#17345b] shadow-[2px_2px_5px_#cbd3db,-2px_-2px_5px_#fff]"
+                >
+                  <Plus size={13} /> Essay
+                </button>
+              </div>
+
+              {questionError && (
+                <p className="text-xs font-semibold text-[#c0392b]">{questionError}</p>
+              )}
             </div>
 
             <ModalActions
               onClose={() => setModalCreate(false)}
-              label="Terbitkan Paket Evaluasi"
+              label={
+                form.processing
+                  ? "Menyimpan..."
+                  : editingId
+                    ? "Simpan Perubahan"
+                    : "Terbitkan Paket Evaluasi"
+              }
             />
           </form>
         </Modal>
@@ -444,8 +762,8 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 p-4 backdrop-blur-sm">
           <div className="flex h-[90vh] w-full max-w-5xl flex-col rounded-[32px] bg-[#e9eef3] p-6 shadow-[10px_10px_25px_#b8c2cc]">
             {/* MODAL TOP BAR */}
-            <div className="flex items-center justify-between border-b border-[#d8e1e8] pb-4">
-              <div>
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#d8e1e8] pb-4">
+              <div className="min-w-0">
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#68777c]">
                   Koreksi Jawaban Essay Siswa
                 </span>
@@ -455,7 +773,7 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
               </div>
               <button
                 type="button"
-                onClick={() => setModalGrading(null)}
+                onClick={() => setModalGradingId(null)}
                 className="rounded-full bg-[#e9eef3] px-3.5 py-1 text-xs font-bold text-[#68777c] shadow-[2px_2px_5px_#cbd3db,-2px_-2px_5px_#fff] hover:text-[#17345b]"
               >
                 Tutup [ESC]
@@ -467,10 +785,10 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
               {/* SISI KIRI: DAFTAR SISWA */}
               <div className="flex flex-col rounded-2xl bg-[#edf2f6] p-3 shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff]">
                 <span className="mb-2 block px-2 text-[10px] font-bold uppercase tracking-wider text-[#68777c]">
-                  Antrean Respons ({submissions.length})
+                  Antrean Respons ({gradingSubmissions.length})
                 </span>
                 <div className="flex-1 space-y-1.5 overflow-y-auto pr-1">
-                  {submissions.map((sub) => {
+                  {gradingSubmissions.map((sub) => {
                     const isActive = sub.id === activeSubmissionId;
                     return (
                       <button
@@ -483,21 +801,30 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
                             : "bg-[#e9eef3] text-[#20272d] hover:bg-white/40"
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <strong className="text-xs font-bold">{sub.name}</strong>
-                          {sub.isGraded ? (
+                        <div className="flex items-center justify-between gap-2">
+                          <strong className="min-w-0 truncate text-xs font-bold">
+                            {sub.student?.user?.name ?? "Siswa"}
+                          </strong>
+                          {sub.is_graded ? (
                             <Check size={13} className={isActive ? "text-[#34d399]" : "text-[#087b79]"} />
                           ) : (
-                            <span className="h-2 w-2 rounded-full bg-[#ef4444]" />
+                            <span className="h-2 w-2 shrink-0 rounded-full bg-[#ef4444]" />
                           )}
                         </div>
                         <div className="mt-1 flex items-center justify-between text-[11px] opacity-80">
-                          <span>PG: {sub.mcqScore}/50</span>
-                          <span>Essay: {sub.essayScore !== null ? `${sub.essayScore}/50` : "Pending"}</span>
+                          <span>PG: {sub.mcq_score}/100</span>
+                          <span>
+                            Essay: {sub.essay_score !== null ? `${sub.essay_score}/100` : "Pending"}
+                          </span>
                         </div>
                       </button>
                     );
                   })}
+                  {gradingSubmissions.length === 0 && (
+                    <p className="rounded-xl bg-[#e9eef3] p-3 text-[11px] text-[#68777c]">
+                      Belum ada siswa yang mengumpulkan kuis ini.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -507,20 +834,21 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
                   {/* INFORMASI BUTIR SOAL */}
                   <div className="rounded-2xl bg-[#edf2f6] p-4 shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff]">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#087b79]">
-                      Butir Soal Essay #1 (Bobot Maks: 50 Poin)
+                      Butir Soal Essay (Bobot Maks: {essayQuestion?.points ?? 0} Poin)
                     </span>
                     <p className="mt-1 text-xs font-bold leading-relaxed text-[#20272d]">
-                      Jelaskan prinsip dasar metode integrasi substitusi aljabar dan berikan skenario kapan metode ini mutlak digunakan!
+                      {essayQuestion?.question_text ??
+                        "Kuis ini tidak memiliki butir soal essay."}
                     </p>
                   </div>
 
                   {/* JAWABAN SISWA */}
                   <div>
                     <span className="text-[11px] font-bold text-[#68777c]">
-                      Jawaban dari {activeSubmission.name}:
+                      Jawaban dari {activeSubmission?.student?.user?.name ?? "Siswa"}:
                     </span>
-                    <div className="mt-1 rounded-2xl bg-[#edf2f6] p-4 text-xs leading-relaxed text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff]">
-                      "{activeSubmission.essayAnswer}"
+                    <div className="mt-1 min-h-16 rounded-2xl bg-[#edf2f6] p-4 text-xs leading-relaxed text-[#20272d] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff]">
+                      "{activeEssayAnswer}"
                     </div>
                   </div>
 
@@ -528,14 +856,14 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
                       <label className="block text-xs font-bold text-[#17345b]">
-                        Nilai Essay (0–50)
+                        Nilai Essay (0–100)
                       </label>
                       <input
                         type="number"
                         min="0"
-                        max="50"
+                        max="100"
                         value={currentEssayInput}
-                        onChange={(e) => setCurrentEssayInput(Math.min(50, Math.max(0, Number(e.target.value) || 0)))}
+                        onChange={(e) => setCurrentEssayInput(Math.min(100, Math.max(0, Number(e.target.value) || 0)))}
                         className="mt-1 w-full rounded-xl bg-[#edf2f6] p-2.5 text-xs font-bold text-[#17345b] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff] outline-none"
                       />
                     </div>
@@ -543,7 +871,10 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
                     <div className="flex flex-col justify-center rounded-xl bg-[#e9eef3] p-2.5 shadow-[2px_2px_5px_#cbd3db,-2px_-2px_5px_#fff]">
                       <span className="text-[10px] font-bold text-[#68777c]">Kalkulasi Nilai Akhir:</span>
                       <strong className="text-sm font-extrabold text-[#17345b]">
-                        {activeSubmission.mcqScore + currentEssayInput} / 100
+                        {activeSubmission
+                          ? Math.round((activeSubmission.mcq_score + currentEssayInput) / 2)
+                          : 0}{" "}
+                        / 100
                       </strong>
                     </div>
                   </div>
@@ -565,8 +896,9 @@ export default function KuisPage({ dbQuizzes }: KuisPageProps = {}) {
                 <div className="mt-5 flex items-center justify-end gap-3 border-t border-[#d8e1e8] pt-3">
                   <button
                     type="button"
-                    onClick={handleSaveGrading}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-[#17345b] px-5 py-2 text-xs font-bold text-white shadow-[2px_2px_6px_#cbd3db] transition hover:bg-[#102743]"
+                    onClick={saveGrading}
+                    disabled={!activeSubmission}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#17345b] px-5 py-2 text-xs font-bold text-white shadow-[2px_2px_6px_#cbd3db] transition hover:bg-[#102743] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Save size={14} />
                     Simpan Nilai & Berikan Feedback
@@ -670,7 +1002,7 @@ export function MatriksPage() {
 
         {/* TABLE CONTENT */}
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full min-w-[720px] text-left">
             <thead>
               <tr className="border-b border-[#d8e1e8] text-[11px] font-extrabold uppercase tracking-wider text-[#68777c]">
                 <th className="py-3 px-3">Nama Siswa</th>

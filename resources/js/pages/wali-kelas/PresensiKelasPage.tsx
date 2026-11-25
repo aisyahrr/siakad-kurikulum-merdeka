@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { toast } from "sonner";
 import {
   Search,
   CheckCircle2,
@@ -172,7 +173,7 @@ export default function PresensiKelasPage() {
         {/* EXPORT CSV BUTTON */}
         <button
           type="button"
-          onClick={() => alert("Mengunduh Rekap Presensi XII MIPA 1 (.CSV)...")}
+          onClick={() => toast.info("Mengunduh Rekap Presensi XII MIPA 1 (.CSV)...")}
           className="inline-flex items-center gap-1.5 self-start rounded-full bg-[#e9eef3] px-4 py-2 text-xs font-bold text-[#17345b] shadow-[3px_3px_7px_#cbd3db,-3px_-3px_7px_#fff] transition hover:text-[#102743] sm:self-auto"
         >
           <Download size={14} />
@@ -252,7 +253,7 @@ export default function PresensiKelasPage() {
 
       {/* VERIFIKASI PENGAJUAN SURAT IZIN / SAKIT SISWA */}
       <div className="rounded-[28px] bg-[#e9eef3] p-5 shadow-[6px_6px_14px_#cbd3db,-6px_-6px_14px_#fff] sm:p-6">
-        <div className="flex items-center justify-between pb-4 border-b border-[#d8e1e8]">
+        <div className="flex flex-col gap-2 border-b border-[#d8e1e8] pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#dbe8f5] text-[#17345b]">
               <FileText size={17} />
@@ -267,7 +268,7 @@ export default function PresensiKelasPage() {
               </span>
             </div>
           </div>
-          <span className="rounded-full bg-[#e0f2fe] px-2.5 py-0.5 text-[10px] font-extrabold text-[#0284c7]">
+          <span className="self-start whitespace-nowrap rounded-full bg-[#e0f2fe] px-2.5 py-0.5 text-[10px] font-extrabold text-[#0284c7] sm:self-auto">
             {leaveRequests.filter((r) => r.status === "Menunggu").length}{" "}
             Menunggu
           </span>
@@ -376,7 +377,7 @@ export default function PresensiKelasPage() {
 
         {/* TABEL PRESENSI */}
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full min-w-[720px] text-left">
             <thead>
               <tr className="border-b border-[#d8e1e8] text-[10px] font-extrabold uppercase tracking-wider text-[#68777c]">
                 <th className="py-3 px-3">Nama Siswa</th>
@@ -450,7 +451,7 @@ export default function PresensiKelasPage() {
       {/* MODAL PREVIEW SURAT BUKTI */}
       {selectedDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-[#d8e1e8] pb-3">
               <div>
                 <span className="text-[10px] font-bold uppercase text-[#68777c]">
@@ -483,7 +484,7 @@ export default function PresensiKelasPage() {
               <button
                 type="button"
                 onClick={() =>
-                  alert(`Mengunduh berkas ${selectedDoc.documentFile}...`)
+                  toast.info(`Mengunduh berkas ${selectedDoc.documentFile}...`)
                 }
                 className="inline-flex items-center gap-1.5 rounded-full bg-[#17345b] px-4 py-2 text-xs font-bold text-white shadow transition hover:bg-[#102743]"
               >

@@ -400,7 +400,7 @@ export default function BimbinganPage({ dbLogs }: BimbinganPageProps = {}) {
       {/* MODAL INPUT LOG BIMBINGAN BARU */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-[#d8e1e8] pb-3">
               <div>
                 <span className="text-[10px] font-bold uppercase text-[#68777c]">
@@ -436,7 +436,7 @@ export default function BimbinganPage({ dbLogs }: BimbinganPageProps = {}) {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="block text-xs font-bold text-[#17345b]">
                     Kategori Kasus

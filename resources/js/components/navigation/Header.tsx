@@ -1,4 +1,6 @@
-import { Bell, LogOut, Menu, Search, Settings, ShieldCheck, Palette } from "lucide-react";
+import { Bell, ChevronDown, ChevronUp, LogOut, Menu, Settings, ShieldCheck, Palette } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Link, router, usePage } from "@inertiajs/react";
 import { roleLabels } from "../../constants/roleNavigation";
 import type { SharedData } from "@/types";
@@ -16,11 +18,17 @@ interface HeaderProps {
 }
 
 const iconButton =
-    "grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#e9eef3] text-[#536268] shadow-[4px_4px_10px_#cbd3db,-4px_-4px_10px_#ffffff] transition-all duration-200 hover:text-[#17345b]";
+    "grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#e9eef3] text-[#536268] shadow-[4px_4px_10px_#cbd3db,-4px_-4px_10px_#ffffff] transition-all duration-200 hover:text-[#17345b] md:h-11 md:w-11";
 
 export function Header({ onOpenSidebar }: HeaderProps) {
     const { auth } = usePage<SharedData>().props;
-    const { user } = auth;
+    const [isOpen, setIsOpen] = useState(false);
+    const user = auth?.user;
+
+    if (!user) {
+        return null;
+    }
+
     const role = user.role;
     const portalLabel = roleLabels[role] ?? roleLabels.siswa;
 
@@ -29,16 +37,20 @@ export function Header({ onOpenSidebar }: HeaderProps) {
             case "guru":
                 return "Guru Pengampu";
             case "wali-kelas":
-                return "Wali Kelas XII MIPA 1";
+                return "Wali Kelas";
             case "admin":
                 return "Administrator Sistem";
+            case "orang-tua":
+                return "Orang Tua / Wali";
+            case "siswa":
+                return "Siswa";
             default:
-                return "Kelas XII MIPA 1";
+                return role;
         }
     };
 
     return (
-        <header className="flex h-[88px] items-center justify-between px-5 md:px-8 xl:px-12">
+        <header className="flex h-[72px] items-center justify-between gap-3 px-4 sm:px-5 md:h-[88px] md:px-8 xl:px-12">
             {/* MOBILE MENU TOGGLE */}
             <button
                 type="button"
@@ -57,13 +69,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
             </div>
 
             {/* RIGHT CONTROLS */}
-            <div className="ml-auto flex items-center gap-3 md:gap-5">
-                {/* GLOBAL SEARCH */}
-                <div className="hidden h-12 w-[320px] items-center gap-2.5 rounded-full px-4 text-xs text-[#7d888c] shadow-[inset_3px_3px_8px_#cbd3db,inset_-3px_-3px_8px_#ffffff] lg:flex">
-                    <Search size={16} />
-                    <span>Cari mata pelajaran, guru, materi...</span>
-                </div>
-
+            <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-3 md:gap-5">
                 {/* NOTIFIKASI */}
                 <button
                     type="button"
@@ -74,13 +80,13 @@ export function Header({ onOpenSidebar }: HeaderProps) {
                 </button>
 
                 {/* USER CHIP */}
-                <DropdownMenu>
+                <DropdownMenu onOpenChange={setIsOpen}>
                     <DropdownMenuTrigger asChild>
                         <button
                             type="button"
                             className="flex items-center gap-2.5 rounded-full outline-none"
                         >
-                            <div className="grid h-11 w-11 place-items-center rounded-full bg-[#17345b] font-bold text-white shadow-[4px_4px_10px_#cbd3db,-4px_-4px_10px_#ffffff]">
+                            <div className="grid h-10 w-10 place-items-center rounded-full bg-[#17345b] font-bold text-white shadow-[4px_4px_10px_#cbd3db,-4px_-4px_10px_#ffffff] md:h-11 md:w-11">
                                 {user.name?.[0] ?? "U"}
                             </div>
 
@@ -92,10 +98,17 @@ export function Header({ onOpenSidebar }: HeaderProps) {
                                     {getRoleSubLabel()}
                                 </p>
                             </div>
+
+                            <div className="hidden text-[#748084] md:block">
+                                {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </div>
                         </button>
                     </DropdownMenuTrigger>
 
-                    <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuContent
+                        align="end"
+                        className="w-56 border-none bg-[#edf2f6] shadow-[10px_10px_25px_#cbd3db,-10px_-10px_25px_#ffffff]"
+                    >
                         <DropdownMenuLabel>
                             <p className="text-xs font-bold text-[#20282d]">
                                 {user.name}
@@ -135,7 +148,14 @@ export function Header({ onOpenSidebar }: HeaderProps) {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className="cursor-pointer text-[#d9534f] focus:text-[#d9534f]"
-                            onSelect={() => router.post("/logout")}
+                                            onSelect={() => {
+                                                toast.info("Keluar dari aplikasi SIAKAD?", {
+                                                    action: {
+                                                        label: "Ya, Logout",
+                                                        onClick: () => router.post("/logout"),
+                                                    },
+                                                });
+                                            }}
                         >
                             <LogOut className="mr-2 h-4 w-4" />
                             Logout

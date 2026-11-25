@@ -11,48 +11,40 @@ import {
   Sparkles,
 } from "lucide-react";
 
-export default function DashboardAdminPage() {
+interface DashboardAdminProps {
+  metrics?: {
+    totalStudents: number;
+    totalTeachers: number;
+    totalClasses: number;
+    totalUsers: number;
+    pendingPayments: number;
+    unpaidAmount: number;
+  };
+  activeYear?: { name: string; semester: string } | null;
+  activities?: Array<{
+    id: string;
+    user: string;
+    role: string;
+    action: string;
+    timestamp: string;
+    ip?: string | null;
+  }>;
+}
+
+export default function DashboardAdminPage({
+  metrics,
+  activeYear,
+  activities = [],
+}: DashboardAdminProps = {}) {
   const systemMetrics = {
-    totalStudents: 1080,
-    totalTeachers: 64,
-    totalClasses: 30,
-    systemUptime: "99.98%",
+    totalStudents: metrics?.totalStudents ?? 0,
+    totalTeachers: metrics?.totalTeachers ?? 0,
+    totalClasses: metrics?.totalClasses ?? 0,
+    pendingPayments: metrics?.pendingPayments ?? 0,
+    unpaidAmount: metrics?.unpaidAmount ?? 0,
   };
 
-  const auditLogs = [
-    {
-      id: "log-1",
-      user: "Drs. Hendra Setiawan",
-      role: "Wali Kelas",
-      action: "Finalisasi cetak rapor kelas XII MIPA 1",
-      timestamp: "10 menit lalu",
-      ip: "192.168.1.45",
-    },
-    {
-      id: "log-2",
-      user: "Admin Pusat",
-      role: "Administrator",
-      action: "Bulk import 36 data siswa baru angkatan 2024",
-      timestamp: "1 jam lalu",
-      ip: "192.168.1.10",
-    },
-    {
-      id: "log-3",
-      user: "Budi Santoso, M.Pd",
-      role: "Guru",
-      action: "Input nilai sumatif SAS Matematika Peminatan",
-      timestamp: "3 jam lalu",
-      ip: "192.168.1.72",
-    },
-    {
-      id: "log-4",
-      user: "Siti Rahma, M.Pd",
-      role: "Guru",
-      action: "Penerbitan modul materi pertemuan P06",
-      timestamp: "5 jam lalu",
-      ip: "192.168.1.33",
-    },
-  ];
+  const auditLogs = activities;
 
   return (
     <section className="space-y-6">
@@ -60,7 +52,9 @@ export default function DashboardAdminPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <span className="block text-[11px] font-bold uppercase tracking-wider text-[#68777c]">
-            Tahun Ajaran Aktif 2024/2025 • Semester Ganjil
+            {activeYear
+              ? `Tahun Ajaran Aktif ${activeYear.name} • Semester ${activeYear.semester}`
+              : "Belum ada tahun ajaran aktif"}
           </span>
           <h1 className="text-2xl font-extrabold tracking-tight text-[#17345b]">
             Pusat Kendali Administrator
@@ -77,7 +71,7 @@ export default function DashboardAdminPage() {
           {
             label: "Total Siswa Terdaftar",
             value: systemMetrics.totalStudents.toLocaleString(),
-            sub: "30 Rombel Aktif",
+            sub: `${systemMetrics.totalClasses} Rombel Aktif`,
             icon: Users,
             colorText: "text-[#17345b]",
           },
@@ -96,9 +90,9 @@ export default function DashboardAdminPage() {
             colorText: "text-[#17345b]",
           },
           {
-            label: "Ketersediaan Server",
-            value: systemMetrics.systemUptime,
-            sub: "SIAKAD Engine Berjalan Normal",
+            label: "Tagihan Menunggu Pembayaran",
+            value: systemMetrics.pendingPayments,
+            sub: `Total Rp ${systemMetrics.unpaidAmount.toLocaleString("id-ID")}`,
             icon: Server,
             colorText: "text-[#087b79]",
           },
@@ -112,7 +106,7 @@ export default function DashboardAdminPage() {
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#edf2f6] text-[#17345b] shadow-[inset_1.5px_1.5px_3px_#cbd3db,inset_-1.5px_-1.5px_3px_#fff]">
                 <Icon size={20} strokeWidth={2} />
               </span>
-              <div>
+              <div className="min-w-0">
                 <span className="block text-[11px] font-semibold text-[#68777c]">
                   {item.label}
                 </span>
@@ -199,9 +193,9 @@ export default function DashboardAdminPage() {
             <div className="divide-y divide-[#dce4ea]">
               {auditLogs.map((log) => (
                 <div key={log.id} className="py-3 first:pt-0 last:pb-0">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <strong className="text-xs font-bold text-[#20272d]">{log.user}</strong>
+                  <div className="flex flex-wrap items-center justify-between gap-1">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <strong className="truncate text-xs font-bold text-[#20272d]">{log.user}</strong>
                       <span className="rounded-full bg-[#dbe8f5] px-2 py-0.2 text-[9px] font-extrabold uppercase text-[#17345b]">
                         {log.role}
                       </span>
@@ -209,9 +203,16 @@ export default function DashboardAdminPage() {
                     <span className="text-[10px] text-[#718086]">{log.timestamp}</span>
                   </div>
                   <p className="mt-1 text-xs text-[#526066] leading-relaxed">{log.action}</p>
-                  <span className="text-[10px] text-[#8fa0a6]">IP Client: {log.ip}</span>
+                  {log.ip && (
+                    <span className="text-[10px] text-[#8fa0a6]">IP Client: {log.ip}</span>
+                  )}
                 </div>
               ))}
+              {auditLogs.length === 0 && (
+                <p className="py-6 text-center text-xs text-[#718086]">
+                  Belum ada aktivitas tercatat.
+                </p>
+              )}
             </div>
           </div>
         </div>

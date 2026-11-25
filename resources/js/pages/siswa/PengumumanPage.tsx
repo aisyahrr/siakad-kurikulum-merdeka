@@ -14,6 +14,7 @@ import {
   ArrowRight,
   X,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useAnnouncements } from "@/hooks/siswa/useAnnouncements";
 
 interface AnnouncementsPageProps {
@@ -320,7 +321,7 @@ export default function AnnouncementsPage({ dbAnnouncements }: AnnouncementsPage
                     {/* ATTACHMENT PILL */}
                     <button
                       type="button"
-                      onClick={() => alert(`Mengunduh berkas: ${item.attachment.fileName}`)}
+                      onClick={() => toast.info(`Mengunduh berkas: ${item.attachment.fileName}`)}
                       className="flex items-center gap-2 rounded-full bg-[#e9eef3] px-4 py-2 text-xs font-semibold text-[#29363d] shadow-[inset_2px_2px_4px_#cbd3db,inset_-2px_-2px_4px_#fff] transition hover:text-[#17345b]"
                     >
                       <Download size={14} className="text-[#17345b]" />
@@ -386,7 +387,7 @@ export default function AnnouncementsPage({ dbAnnouncements }: AnnouncementsPage
       ========================================================= */}
       {activeModalItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl sm:p-8">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-[32px] bg-[#e9eef3] p-6 shadow-2xl sm:p-8">
             <div className="flex items-start justify-between border-b border-[#d5dee4] pb-3">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#17345b]">
@@ -428,7 +429,7 @@ export default function AnnouncementsPage({ dbAnnouncements }: AnnouncementsPage
               </button>
               <button
                 type="button"
-                onClick={() => alert(`Mengunduh ${activeModalItem.attachment.fileName}...`)}
+                onClick={() => toast.info(`Mengunduh ${activeModalItem.attachment.fileName}...`)}
                 className="inline-flex items-center gap-1.5 rounded-full bg-[#17345b] px-5 py-2 text-xs font-bold text-white shadow"
               >
                 <Download size={13} />

@@ -225,7 +225,7 @@ export default function RekapNilaiPage({ dbStudents }: RekapNilaiPageProps = {})
 
         {/* TABEL MASTER SPREADSHEET */}
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full min-w-[820px] text-left">
             <thead>
               <tr className="border-b border-[#d8e1e8] text-[10px] font-extrabold uppercase tracking-wider text-[#68777c]">
                 <th className="py-3 px-2 text-center">Rank</th>
@@ -342,7 +342,7 @@ export default function RekapNilaiPage({ dbStudents }: RekapNilaiPageProps = {})
             </div>
 
             {/* PRINT CANVAS (A4 STYLE FORMAT) */}
-            <div className="mt-4 flex-1 overflow-y-auto bg-white p-8 text-gray-800 shadow-sm rounded-2xl border border-gray-200">
+            <div className="mt-4 flex-1 overflow-y-auto rounded-2xl border border-gray-200 bg-white p-4 text-gray-800 shadow-sm sm:p-8">
               {/* KOP SURAT SEKOLAH */}
               <div className="flex items-center gap-4 border-b-2 border-gray-800 pb-4 text-center">
                 <div className="grid h-16 w-16 place-items-center rounded-full bg-[#17345b] text-white">
@@ -376,8 +376,8 @@ export default function RekapNilaiPage({ dbStudents }: RekapNilaiPageProps = {})
               </div>
 
               {/* TABEL CAPAIAN MATA PELAJARAN */}
-              <div className="mt-6">
-                <table className="w-full text-left text-xs border border-gray-300">
+              <div className="mt-6 overflow-x-auto">
+                <table className="w-full min-w-[560px] border border-gray-300 text-left text-xs">
                   <thead className="bg-gray-100 text-[11px] font-bold text-gray-700">
                     <tr className="border-b border-gray-300">
                       <th className="py-2.5 px-3 border-r border-gray-300 text-center w-10">No</th>

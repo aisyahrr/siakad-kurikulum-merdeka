@@ -2,6 +2,7 @@ import { createInertiaApp } from "@inertiajs/react";
 import { createRoot } from "react-dom/client";
 import type { ComponentType, ReactNode } from "react";
 import { AuthLayout } from "@/layouts/AuthLayout";
+import { Toaster } from "@/components/ui/sonner";
 
 const appName = import.meta.env.VITE_APP_NAME || "Jeguk High School";
 
@@ -38,7 +39,12 @@ void createInertiaApp({
     },
 
     setup({ el, App, props }) {
-        createRoot(el).render(<App {...props} />);
+        createRoot(el).render(
+            <>
+                <App {...props} />
+                <Toaster />
+            </>,
+        );
     },
 
     progress: {

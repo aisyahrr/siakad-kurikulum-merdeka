@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { router, usePage } from "@inertiajs/react";
 import {
   Upload,
   FileSpreadsheet,
@@ -22,12 +23,56 @@ interface ParsedRowPreview {
   errorNote?: string;
 }
 
+function parseCsvLine(line: string): string[] {
+  const values: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === "," && !inQuotes) {
+      values.push(current.trim());
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+
+  values.push(current.trim());
+
+  return values;
+}
+
 export default function ImportDataPage() {
+  const page = usePage<{ flash?: { success?: string; error?: string } }>();
+  const flash = page.props.flash;
+
   const [targetType, setTargetType] = useState<ImportTarget>("siswa");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [parsedRows, setParsedRows] = useState<ParsedRowPreview[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [feedback, setFeedback] = useState("");
+
+  useEffect(() => {
+    if (flash?.success) {
+      setFeedback(flash.success);
+      const timer = setTimeout(() => setFeedback(""), 4000);
+      return () => clearTimeout(timer);
+    }
+    if (flash?.error) {
+      setFeedback(flash.error);
+      const timer = setTimeout(() => setFeedback(""), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [flash?.success, flash?.error]);
 
   const targetConfigs: Record<
     ImportTarget,
@@ -152,17 +197,77 @@ export default function ImportDataPage() {
     [parsedRows],
   );
 
-  const handleSimulatedUpload = (file: File) => {
+  const validateRow = (
+    type: ImportTarget,
+    col1: string,
+    col2: string,
+    col3: string,
+    col4: string,
+  ): string | null => {
+    if (!col1) return "Nama wajib diisi";
+
+    if (type === "siswa") {
+      if (!/^\d{10}$/.test(col2)) return "NISN harus 10 digit angka";
+      if (!col3) return "Rombel wajib diisi";
+      if (!["L", "P"].includes(col4.toUpperCase())) return "Gender harus L atau P";
+    }
+
+    if (type === "guru") {
+      if (!/^\d{8,20}$/.test(col2)) return "NIP harus berupa 8-20 digit angka";
+      if (!col3) return "Mata pelajaran wajib diisi";
+      if (!["PNS", "PPPK", "HONORER"].includes(col4.toUpperCase())) {
+        return "Status harus PNS, PPPK, atau Honorer";
+      }
+    }
+
+    if (type === "rombel") {
+      if (!col2) return "Tingkat / fase wajib diisi";
+      if (!col4) return "Kapasitas wajib diisi";
+    }
+
+    return null;
+  };
+
+  const handleFileUpload = async (file: File) => {
     setSelectedFile(file);
     setIsProcessing(true);
 
-    setTimeout(() => {
-      setParsedRows(currentConfig.sampleData);
-      setIsProcessing(false);
+    try {
+      const text = await file.text();
+      const lines = text
+        .replace(/\r\n/g, "\n")
+        .split("\n")
+        .filter((line) => line.trim() !== "");
+
+      if (lines.length > 0 && /nama/i.test(parseCsvLine(lines[0])[0] ?? "")) {
+        lines.shift();
+      }
+
+      const rows: ParsedRowPreview[] = lines.map((line, index) => {
+        const [col1 = "", col2 = "", col3 = "", col4 = ""] = parseCsvLine(line);
+        const error = validateRow(targetType, col1, col2, col3, col4);
+
+        return {
+          id: String(index + 1),
+          col1,
+          col2,
+          col3,
+          col4,
+          isValid: error === null,
+          errorNote: error ?? undefined,
+        };
+      });
+
+      setParsedRows(rows);
       setFeedback(
-        `Berkas "${file.name}" berhasil dibaca. Silakan telaah pratinjau data.`,
+        `Berkas "${file.name}" berhasil dibaca. ${rows.length} baris terdeteksi.`,
       );
-    }, 600);
+    } catch {
+      setParsedRows([]);
+      setFeedback("Berkas gagal dibaca. Pastikan format CSV valid.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleDownloadTemplate = () => {
@@ -178,16 +283,31 @@ export default function ImportDataPage() {
   };
 
   const handleCommitImport = () => {
+    const validRows = parsedRows
+      .filter((row) => row.isValid)
+      .map((row) => ({
+        col1: row.col1,
+        col2: row.col2,
+        col3: row.col3,
+        col4: row.col4,
+      }));
+
+    if (validRows.length === 0) return;
+
     setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      setFeedback(
-        `Berhasil mengimpor ${validCount} baris data ke dalam database akademik.`,
-      );
-      setParsedRows([]);
-      setSelectedFile(null);
-      setTimeout(() => setFeedback(""), 4000);
-    }, 800);
+
+    router.post(
+      "/admin/import",
+      { target: targetType, rows: validRows },
+      {
+        preserveScroll: true,
+        onSuccess: () => {
+          setParsedRows([]);
+          setSelectedFile(null);
+        },
+        onFinish: () => setIsProcessing(false),
+      },
+    );
   };
 
   return (
@@ -288,22 +408,22 @@ export default function ImportDataPage() {
 
           <input
             type="file"
-            accept=".csv, .xlsx, .xls"
+            accept=".csv"
             className="hidden"
             onChange={(e) => {
               if (e.target.files && e.target.files[0]) {
-                handleSimulatedUpload(e.target.files[0]);
+                void handleFileUpload(e.target.files[0]);
               }
             }}
           />
         </label>
 
         {selectedFile && (
-          <div className="mt-4 flex items-center justify-between rounded-xl bg-[#e9eef3] p-3 shadow-[2px_2px_5px_#cbd3db,-2px_-2px_5px_#fff]">
-            <div className="flex items-center gap-2.5">
-              <FileText size={18} className="text-[#087b79]" />
-              <div>
-                <strong className="block text-xs font-bold text-[#20272d]">
+          <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-[#e9eef3] p-3 shadow-[2px_2px_5px_#cbd3db,-2px_-2px_5px_#fff]">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <FileText size={18} className="shrink-0 text-[#087b79]" />
+              <div className="min-w-0">
+                <strong className="block truncate text-xs font-bold text-[#20272d]">
                   {selectedFile.name}
                 </strong>
                 <span className="text-[10px] text-[#68777c]">
@@ -353,7 +473,7 @@ export default function ImportDataPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full min-w-[720px] text-left">
               <thead>
                 <tr className="border-b border-[#d8e1e8] text-[10px] font-extrabold uppercase tracking-wider text-[#68777c]">
                   <th className="py-2.5 px-3">{currentConfig.columns[0]}</th>
@@ -403,7 +523,7 @@ export default function ImportDataPage() {
           </div>
 
           {/* COMMIT ACTION BUTTONS */}
-          <div className="flex items-center justify-between pt-4 border-t border-[#d8e1e8]">
+          <div className="flex flex-col gap-3 border-t border-[#d8e1e8] pt-4 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-[11px] text-[#68777c]">
               Hanya {validCount} baris valid yang akan dimasukkan ke database.
             </span>
@@ -412,7 +532,7 @@ export default function ImportDataPage() {
               type="button"
               disabled={validCount === 0 || isProcessing}
               onClick={handleCommitImport}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[#17345b] px-6 py-2.5 text-xs font-bold text-white shadow-[3px_3px_7px_#cbd3db] transition hover:bg-[#102743] disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-1.5 self-start rounded-full bg-[#17345b] px-6 py-2.5 text-xs font-bold text-white shadow-[3px_3px_7px_#cbd3db] transition hover:bg-[#102743] disabled:opacity-50 sm:self-auto"
             >
               <Database size={14} />
               {isProcessing

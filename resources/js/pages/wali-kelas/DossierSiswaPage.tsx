@@ -290,7 +290,7 @@ export default function DossierSiswaPage() {
                   Tingkat Kehadiran: {currentStudent.attendance.rate}%
                 </span>
               </div>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <div className="rounded-xl bg-[#edf2f6] p-2 text-center shadow-[inset_1px_1px_2px_#cbd3db,inset_-1px_-1px_2px_#fff]">
                   <span className="block text-[10px] font-bold text-[#087b79]">Hadir</span>
                   <b className="text-sm font-extrabold text-[#087b79]">{currentStudent.attendance.hadir}</b>
@@ -317,7 +317,7 @@ export default function DossierSiswaPage() {
               Transkrip Capaian Kurikulum Merdeka
             </h3>
             <div className="mt-3 overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full min-w-[640px] text-left">
                 <thead>
                   <tr className="border-b border-[#d8e1e8] text-[10px] font-extrabold uppercase tracking-wider text-[#68777c]">
                     <th className="py-2.5 px-2">Mata Pelajaran</th>

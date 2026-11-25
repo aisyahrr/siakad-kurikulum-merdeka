@@ -164,7 +164,7 @@ export default function PresensiGuruPage() {
         </div>
 
         {/* 4 COUNTER PILLS STATISTIK KEHADIRAN */}
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <div className="rounded-2xl bg-[#e9eef3] p-3 text-center shadow-[4px_4px_9px_#cbd3db,-4px_-4px_9px_#fff]">
             <span className="block text-[10px] font-bold text-[#087b79]">Hadir</span>
             <b className="mt-0.5 block text-lg font-extrabold text-[#087b79]">{stats.hadir}</b>
@@ -210,7 +210,7 @@ export default function PresensiGuruPage() {
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={handleSetAllPresent}
@@ -233,7 +233,7 @@ export default function PresensiGuruPage() {
 
         {/* TABEL PRESENSI SISWA */}
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full min-w-[640px] text-left">
             <thead>
               <tr className="border-b border-[#d8e1e8] text-[11px] font-extrabold uppercase tracking-wider text-[#68777c]">
                 <th className="py-3 px-3">No</th>
